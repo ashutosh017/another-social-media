@@ -1,15 +1,11 @@
 "use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Home, Search, User, MessageSquare, Plus } from "lucide-react";
-import { User as userType } from "@/app/generated/prisma";
+import { cn } from "@/lib/utils";
 
-export default function BottomBar({
-  user,
-}: {
-  user: Omit<userType, "password">;
-}) {
+export default function BottomBar() {
+  const user = useParams();
   const pathname = usePathname();
 
   return (
@@ -18,7 +14,7 @@ export default function BottomBar({
         <Link
           href={`/${user.username}/feed`}
           className={`flex flex-col items-center ${
-            pathname === "/"
+            pathname === `/${user.username}/feed`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -29,7 +25,7 @@ export default function BottomBar({
         <Link
           href={`/${user.username}/search`}
           className={`flex flex-col items-center ${
-            pathname === "/search"
+            pathname === `/${user.username}/search`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -40,18 +36,25 @@ export default function BottomBar({
         <Link
           href={`/${user.username}/add`}
           className={`flex flex-col items-center ${
-            pathname === "#"
+            pathname === `/${user.username}/add`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
         >
-          <Plus className="h-6 w-6 border border-muted-foreground p-0.5 rounded-md" />
+          <Plus
+            className={cn(
+              "h-6 w-6 border-2 p-0.5 rounded-md",
+              pathname === `/${user.username}/add`
+                ? "border-white"
+                : "border-muted-foreground"
+            )}
+          />
           <span className="text-xs mt-1">Add</span>
         </Link>
         <Link
           href={`/${user.username}/messages`}
           className={`flex flex-col items-center ${
-            pathname === "/messages"
+            pathname === `/${user.username}/messages`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -62,7 +65,7 @@ export default function BottomBar({
         <Link
           href={`/${user.username}`}
           className={`flex flex-col items-center ${
-            pathname?.startsWith("/")
+            pathname === `/${user.username}`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}

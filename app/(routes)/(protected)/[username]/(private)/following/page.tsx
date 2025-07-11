@@ -1,21 +1,30 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ArrowLeft, Search } from "lucide-react"
-import Link from "next/link"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { prisma } from "@/lib/db";
+import { ArrowLeft, Search } from "lucide-react";
+import Link from "next/link";
 
-export default function FollowingPage() {
-  // Mock following data
-  const following = Array.from({ length: 20 }, (_, i) => ({
-    id: i + 1,
-    username: `user${i + 1}`,
-    name: `User ${i + 1}`,
-  }))
-
+export default async function FollowingPage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const username = (await params).username;
+  const following = await prisma.follow.findMany({
+    where: {
+      follower: {
+        username: username,
+      },
+    },
+    select: {
+      following: true,
+    },
+  });
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="/feed" className="mr-2">
+        <Link href="./" className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-semibold flex-1">Following</h1>
@@ -29,12 +38,14 @@ export default function FollowingPage() {
       </div>
 
       <div className="divide-y">
-        {following.map((user) => (
+        {following.map(({ following: user }) => (
           <div key={user.id} className="flex items-center justify-between p-4">
             <div className="flex items-center">
               <Avatar className="h-12 w-12 mr-3">
                 <AvatarImage src={``} alt={user.username} />
-                <AvatarFallback>{user.username.substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {user.username.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{user.username}</p>
@@ -48,5 +59,5 @@ export default function FollowingPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

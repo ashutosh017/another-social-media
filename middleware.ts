@@ -30,6 +30,9 @@ export default async function middleware(request: NextRequest) {
     )) as unknown as { payload: { username: string } };
 
     const username = decode.payload.username;
+    if(!username){
+      throw new Error("Unauthorized")
+    }
     console.log("username in middleware: ", decode);
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-username", username);

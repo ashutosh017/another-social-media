@@ -18,6 +18,7 @@ import { Eye, LucideEyeOff } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -37,9 +38,15 @@ export default function page() {
       password: "",
     },
   });
+  const router = useRouter();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await axios.post("/api/v1/signin", values);
+    try {
+          await axios.post("/api/signin", values);
+          router.push(`/${values.username}`)
+    } catch (error) {
+      
+    }
 
     console.log(values);
   }

@@ -23,6 +23,7 @@ model User {
   profilePicUrl          String?
   bio                    String?
   public                 Boolean                   @default(true)
+  isVerified             Boolean                   @default(false)
   DOB                    DateTime?
   posts                  Post[]
   likedPosts             PostLike[]
@@ -41,6 +42,7 @@ model Post {
   id          String      @unique @default(uuid())
   dateCreated DateTime    @default(now())
   url         String
+  caption     String?
   userId      String
   user        User        @relation(fields: [userId], references: [id])
   likes       PostLike[]

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,9 +11,25 @@ import { ArrowLeft, Camera, ImageIcon, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
-import { cloudinary_cloud_name } from "@/lib/config";
+import { backend_url, cloudinary_cloud_name } from "@/lib/config";
 import { promise } from "zod";
 import { resolve } from "path";
+
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 const Loading = ({ isShow }: { isShow: boolean }) => {
   console.log("Loading mounted");
@@ -32,6 +48,7 @@ const Loading = ({ isShow }: { isShow: boolean }) => {
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
+  const debouncedCaptionValue = useDebounce(caption, 500);
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,23 +66,32 @@ export default function CreatePostPage() {
   const handleShare = async () => {
     // In a real app, you would upload the image and create the post
     setIsLoading(true);
-    await new Promise((res) => {
-      setTimeout(() => {
-        res(1);
-      }, 3000);
-    });
     console.log("Sharing post:", { image: selectedImage, caption, location });
-    // Redirect to home page after sharing
-    // window.location.href = "/"
     const formData = new FormData();
 
-    formData.append("file", selectedImage!); // base64 string or File object
+    formData.append("file", selectedImage!);
     formData.append("upload_preset", "social-media-app");
     const res = await axios.post(
       `https://api.cloudinary.com/v1_1/${cloudinary_cloud_name}/image/upload`,
       formData
     );
-    console.log(res.data);
+    console.log(res.data.secure_url);
+    try {
+      const uploadRes = await axios.post(
+        `${backend_url}/posts`,
+        {
+          postUrl: res.data.secure_url,
+          caption,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+    setSelectedImage(null);
+    setCaption("");
     setIsLoading(false);
   };
 
@@ -94,6 +120,7 @@ export default function CreatePostPage() {
                 src={selectedImage || "/placeholder.svg"}
                 alt="Selected image"
                 fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover rounded-lg"
               />
               <Button

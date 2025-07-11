@@ -44,8 +44,8 @@ export default function page() {
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await axios.post("/api/v1/signup", values);
-      const res = await axios.post("/api/v1/signin", {
+      await axios.post("/api/signup", values);
+      const res = await axios.post("/api/signin", {
         username: values.username,
         password: values.password,
       });

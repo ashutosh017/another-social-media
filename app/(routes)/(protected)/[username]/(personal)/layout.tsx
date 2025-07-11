@@ -8,20 +8,18 @@ export default async function UserPersonalLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: {
-    username: string;
-  };
+  params: Promise<{ username: string }>;
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const username = params.username;
+  const username = (await params).username;
   const me = await axios.get(`${backend_url}/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
   const myUsername = me.data.user.username;
-  if(myUsername!==username){
+  if (myUsername !== username) {
     notFound();
   }
   return <div>{children}</div>;

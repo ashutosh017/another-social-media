@@ -1,8 +1,8 @@
+import BottomBar from "@/components/bottom-bar";
+import { getMe } from "@/lib/actions";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import BottomBar from "@/components/bottom-bar";
-import { User } from "@/app/generated/prisma";
-import { getMe } from "@/lib/actions";
+import { createContext, useContext } from "react";
 
 export default async function ProtectedRoutesLayout({
   children,
@@ -13,12 +13,11 @@ export default async function ProtectedRoutesLayout({
   if (!token) {
     redirect("/signin");
   }
-  const user: Omit<User, "password"> = await getMe(token);
 
   return (
-    <div className="max-w-md mx-auto ">
-      {children}
-      <BottomBar user={user} />
-    </div>
+      <div className="max-w-md mx-auto ">
+        {children}
+        <BottomBar />
+      </div>
   );
 }
