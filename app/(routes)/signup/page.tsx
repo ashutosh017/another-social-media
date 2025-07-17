@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Eye, LucideEyeOff } from "lucide-react";
-import { useRef, useState } from "react";
+import {  useState } from "react";
 import Link from "next/link";
-import axios from "axios";
+import { signup } from "@/app/actions/auth.actions";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -43,15 +43,7 @@ export default function page() {
     },
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      await axios.post("/api/signup", values);
-      const res = await axios.post("/api/signin", {
-        username: values.username,
-        password: values.password,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    await signup(values);
   }
   return (
     <div>

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X, Hash, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { searchUsers } from "@/lib/actions";
+import { searchUsers } from "@/app/actions/users.actions";
 
 const mockHashtags = [
   { tag: "photography", posts: "125M" },
@@ -23,11 +23,14 @@ const mockHashtags = [
 
 type mockUsers = {
   id: string;
-  profilePicUrl: string | null;
-  username: string;
   name: string;
+  username: string;
   isVerified: boolean;
-  followers: { id: string }[];
+  profilePicUrl: string | null;
+  DOB: Date | null;
+  followers: {
+    id: string;
+  }[];
 }[];
 
 const mockPosts = Array.from({ length: 20 }, (_, i) => ({
@@ -108,7 +111,7 @@ export default function SearchPage() {
     const lowerQuery = query.toLowerCase();
 
     // Search users
-    const users = await searchUsers(query);
+    const users = (await searchUsers(query)) as unknown as mockUsers;
 
     // Search hashtags
     const filteredHashtags = mockHashtags.filter((hashtag) =>
@@ -250,7 +253,7 @@ export default function SearchPage() {
                   src={post.image || "/placeholder.svg"}
                   alt={`Explore post ${post.id}`}
                   fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover hover:opacity-90 transition-opacity"
                 />
               </Link>
@@ -421,7 +424,7 @@ export default function SearchPage() {
                         }
                         alt={`Post ${post.id}`}
                         fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover hover:opacity-90 transition-opacity"
                       />
                     </Link>

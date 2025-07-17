@@ -1,9 +1,8 @@
 "use client";
-
-import { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowLeft,
@@ -12,115 +11,219 @@ import {
   MessageCircle,
   MoreHorizontal,
   Send,
-  Smile,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { fetchPost, toggleLikePost } from "@/app/actions/posts.actions";
+import { MeContext } from "@/components/me-context";
+import {
+  addComment,
+  toggleCommentLike,
+  toggleReplyLike,
+} from "@/app/actions/comments.actions";
+import { PostType } from "@/types/post.types";
+import { cn } from "@/lib/utils";
+import { CommentBox } from "@/components/commnet-box";
 
 export default function PostPage() {
+  console.log("render");
+  const me = useContext(MeContext);
+  if (!me) {
+    return <div>user not found</div>;
+  }
   const params = useParams();
   const postId = params.postId as string;
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [comment, setComment] = useState("");
+  const [postLikes, setPostLikes] = useState(0);
+  const [localCommentLikes, setLocalCommentLikes] = useState<
+    Record<string, number>
+  >({});
+  const [likedComments, setLikedComments] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [localReplyLikes, setLocalReplyLikes] = useState<
+    Record<string, Record<string, number>>
+  >({});
+  const [likedReplies, setLikedReplies] = useState<
+    Record<string, Record<string, boolean>>
+  >({});
+  const [post, setPost] = useState<PostType>(null);
+  const [parentCommentId, setParentCommentId] = useState<string | null>(null);
+  const [showCommentReplies, setShowCommentReplies] = useState<
+    Record<string, boolean>
+  >({});
+  const [showReplyPopup, setShowReplyPopup] = useState(false);
+  const [replyTo, setReplyTo] = useState("");
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const commentScrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    async function fetchPostWithId() {
+      const p = await fetchPost(postId);
+      if (p) {
+        const initialCommentLikes: Record<string, number> = {};
+        const initialCommentLiked: Record<string, boolean> = {};
+        const initialReplyLikes: Record<string, Record<string, number>> = {};
+        const initialReplyLiked: Record<string, Record<string, boolean>> = {};
 
-  // Mock post data - in a real app, this would be fetched based on postId
-  const post = {
-    id: postId,
-    user: {
-      username: `user${postId}`,
-      avatar: `/placeholder.svg?height=32&width=32&text=User${postId}`,
-      isVerified: false,
-    },
-    image: `/placeholder.svg?height=600&width=600&text=Post${postId}`,
-    caption:
-      "This is a detailed caption for the post. It might be longer and contain hashtags, mentions, and emojis! 📸 #photography #instagram #nature",
-    likes: 1234,
-    timestamp: "2 HOURS AGO",
-    location: "New York, NY",
-  };
+        setPost(() => p);
+        setPostLikes(p.likes.length);
+        p.comments.forEach((comment) => {
+          initialCommentLikes[comment.id] = comment.likes.length;
+          initialCommentLiked[comment.id] = comment.likes.some(
+            (like) => like.user.username === me?.username
+          );
+          const replyLikes: Record<string, number> = {};
+          const replyLiked: Record<string, boolean> = {};
+          comment.replies.forEach((reply) => {
+            if (reply.likes.length > 0) {
+              replyLikes[reply.id] = reply.likes.length;
+              replyLiked[reply.id] = reply.likes.some((id) => id === me?.id);
+            }
+          });
+          if (comment.replies.length > 0) {
+            initialReplyLikes[comment.id] = replyLikes;
+            initialReplyLiked[comment.id] = replyLiked;
+          }
+        });
+        setLocalCommentLikes(initialCommentLikes);
+        setLikedComments(initialCommentLiked);
+        setLocalReplyLikes(initialReplyLikes);
+        setLikedReplies(initialReplyLiked);
+        const myLike = p.likes.find((like) => like.userId === me?.id);
+        if (myLike) {
+          setIsLiked(true);
+        }
+      }
+    }
+    fetchPostWithId();
+  }, []);
+  useEffect(() => {
+    const el = document.getElementById("new");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [post]);
 
-  // Mock comments data
-  const comments = [
-    {
-      id: 1,
-      user: {
-        username: "friend1",
-        avatar: "/placeholder.svg?height=32&width=32&text=F1",
-      },
-      text: "Amazing shot! 🔥",
-      timestamp: "1h",
-      likes: 12,
-    },
-    {
-      id: 2,
-      user: {
-        username: "friend2",
-        avatar: "/placeholder.svg?height=32&width=32&text=F2",
-      },
-      text: "Love this! Where was this taken?",
-      timestamp: "45m",
-      likes: 8,
-    },
-    {
-      id: 3,
-      user: {
-        username: "friend3",
-        avatar: "/placeholder.svg?height=32&width=32&text=F3",
-      },
-      text: "Incredible composition and lighting! 📷✨",
-      timestamp: "30m",
-      likes: 15,
-    },
-    {
-      id: 4,
-      user: {
-        username: "friend4",
-        avatar: "/placeholder.svg?height=32&width=32&text=F4",
-      },
-      text: "This deserves more likes!",
-      timestamp: "20m",
-      likes: 5,
-    },
-  ];
-
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  const handleLike = (commentId?: string, replyId?: string) => {
+    if (commentId && !replyId) {
+      toggleCommentLike(commentId);
+      const alreadyLiked = likedComments[commentId];
+      setLocalCommentLikes((prev) => ({
+        ...prev,
+        [commentId]: prev[commentId] + (alreadyLiked ? -1 : 1),
+      }));
+      setLikedComments((prev) => ({
+        ...prev,
+        [commentId]: !alreadyLiked,
+      }));
+    } else if (replyId && commentId) {
+      toggleReplyLike(replyId);
+      const alreadyLiked = likedReplies[commentId][replyId];
+      setLocalReplyLikes((prev) => ({
+        ...prev,
+        [commentId]: {
+          ...prev[commentId],
+          [replyId]: (prev[commentId][replyId] ?? 0) + (alreadyLiked ? -1 : 1),
+        },
+      }));
+      setLikedReplies((prev) => ({
+        ...prev,
+        [commentId]: {
+          ...prev[commentId],
+          [replyId]: !prev[commentId][replyId],
+        },
+      }));
+    } else {
+      setPostLikes((prevLikes) => prevLikes + [1, -1][Number(isLiked)]);
+      setIsLiked(!isLiked);
+      toggleLikePost(post?.id ?? null);
+    }
   };
 
   const handleSave = () => {
     setIsSaved(!isSaved);
   };
 
-  const handleComment = () => {
-    if (comment.trim()) {
-      console.log("Adding comment:", comment);
-      setComment("");
+  const handleComment = useCallback(
+    (comment: string) => {
+      if (comment.trim()) {
+        console.log("Adding comment:", comment);
+        console.log("parent id: ", parentCommentId);
+        console.log("reply to: ", replyTo);
+        console.log("postId: ", postId);
+        addComment(postId, comment, parentCommentId);
+        setParentCommentId(null);
+        setReplyTo("");
+        setShowReplyPopup(false);
+        setPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: [
+                  ...prev.comments,
+                  {
+                    id: "new",
+                    dateCreated: new Date(),
+                    text: comment,
+                    user: {
+                      name: me?.name,
+                      username: me?.username,
+                      profilePicUrl: me?.profilePicUrl,
+                      isVerified: me?.isVerified,
+                    },
+                    likes: [],
+                    replies: [],
+                  },
+                ],
+              }
+            : null
+        );
+        // if (commentScrollRef.current) {
+        //   console.log("scroll")
+        //  commentScrollRef.current.scrollIntoView({block:"nearest", behavior:"smooth"})
+        // }
+      }
+    },
+    [parentCommentId]
+  );
+
+  const toggleReplies = (commentId: string) => {
+    let commentReplies: Record<string, boolean> = {};
+    if (showCommentReplies[commentId]) {
+      commentReplies[commentId] = false;
+    } else {
+      commentReplies[commentId] = true;
     }
+    setShowCommentReplies(commentReplies);
   };
 
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 scroll-smooth">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="/" className="mr-2">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
+        <Button
+          variant={"ghost"}
+          onClick={() => window.history.back()}
+          className="mr-2"
+        >
+          <ArrowLeft className="h-5 w-5 " />
+        </Button>
         <div className="flex items-center gap-2 flex-1">
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={post.user.avatar || "/placeholder.svg"}
-              alt={post.user.username}
+              src={post?.user?.profilePicUrl || "/user.png"}
+              alt={post?.user.username}
             />
             <AvatarFallback>
-              {post.user.username.substring(0, 2).toUpperCase()}
+              {post?.user.username.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold text-sm">{post.user.username}</p>
-            {post.location && (
-              <p className="text-xs text-muted-foreground">{post.location}</p>
-            )}
+            <p className="font-semibold text-sm">{post?.user.username}</p>
+            {/* {post?.location && (
+              <p className="text-xs text-muted-foreground">{post?.location}</p>
+            )} */}
           </div>
         </div>
         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -128,17 +231,19 @@ export default function PostPage() {
         </Button>
       </header>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col ">
         {/* Post Image */}
         <div className="relative aspect-square w-full">
-          <Image
-            src={post.image || "/placeholder.svg"}
-            alt={`Post by ${post.user.username}`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover"
-            priority
-          />
+          {post?.url && (
+            <Image
+              src={post?.url}
+              alt={`Post by ${post?.user.username}`}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+              priority
+            />
+          )}
         </div>
 
         {/* Post Actions */}
@@ -148,7 +253,7 @@ export default function PostPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleLike}
+                onClick={() => handleLike()}
                 className="p-0"
               >
                 <Heart
@@ -157,7 +262,17 @@ export default function PostPage() {
                   }`}
                 />
               </Button>
-              <Button variant="ghost" size="icon" className="p-0">
+              <Button
+                onClick={() => {
+                  bottomRef.current?.scrollIntoView({
+                    block: "nearest",
+                    behavior: "smooth",
+                  });
+                }}
+                variant="ghost"
+                size="icon"
+                className="p-0"
+              >
                 <MessageCircle className="h-6 w-6" />
               </Button>
               <Button variant="ghost" size="icon" className="p-0">
@@ -177,19 +292,20 @@ export default function PostPage() {
           </div>
 
           <div className="space-y-2">
-            <p className="font-semibold text-sm">
-              {post.likes.toLocaleString()} likes
-            </p>
+            <p className="font-semibold text-sm">{postLikes} likes</p>
             <div className="text-sm">
               <Link
-                href={`/profile/${post.user.username}`}
+                href={`/profile/${post?.user.username}`}
                 className="font-semibold"
               >
-                {post.user.username}
+                {post?.user.username}
               </Link>{" "}
-              {post.caption}
+              {post?.caption}
             </div>
-            <p className="text-xs text-muted-foreground">{post.timestamp}</p>
+            <p className="text-xs text-muted-foreground">
+              {post?.dateCreated &&
+                formatDistanceToNow(post?.dateCreated, { addSuffix: true })}
+            </p>
           </div>
         </div>
 
@@ -197,94 +313,170 @@ export default function PostPage() {
         <div className="flex-1">
           <div className="p-4 border-b">
             <h3 className="font-semibold text-sm mb-3">Comments</h3>
-            <ScrollArea className="space-y-4 max-h-96">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3 mb-4">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage
-                      src={comment.user.avatar || "/placeholder.svg"}
-                      alt={comment.user.username}
-                    />
-                    <AvatarFallback>
-                      {comment.user.username.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <Link
-                            href={`/profile/${comment.user.username}`}
-                            className="font-semibold"
-                          >
-                            {comment.user.username}
-                          </Link>{" "}
-                          {comment.text}
-                        </p>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {comment.timestamp}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {comment.likes} likes
-                          </span>
-                          <button className="text-xs text-muted-foreground font-semibold">
-                            Reply
-                          </button>
+            <ScrollArea className="space-y-4 h-96">
+              {post?.comments.map((comment, index) => (
+                <div id={comment.id} key={index} className="mb-4 pr-2 ">
+                  <div className="flex gap-3">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarImage
+                        src={comment.user.profilePicUrl || "/user.png"}
+                        alt={comment.user.username}
+                      />
+                      <AvatarFallback>
+                        {comment.user.username.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm">
+                            <Link
+                              href={`/profile/${comment.user.username}`}
+                              className="font-semibold"
+                            >
+                              {comment.user.username}
+                            </Link>{" "}
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(
+                                new Date(comment.dateCreated),
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
+                            </span>
+                          </p>
+                          <p className="text-sm mt-1">{comment.text}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {localCommentLikes[comment.id] ??
+                                comment.likes.length}{" "}
+                              likes
+                            </span>
+                            <button
+                              onClick={() => {
+                                setParentCommentId(comment.id);
+                                setReplyTo(comment.user.username);
+                                setShowReplyPopup(true);
+                                if (bottomRef.current) {
+                                  bottomRef.current.scrollIntoView({
+                                    block: "nearest",
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }}
+                              className="text-xs text-muted-foreground font-semibold"
+                            >
+                              Reply
+                            </button>
+                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 ml-2"
+                          onClick={() => handleLike(comment.id)}
+                        >
+                          <Heart
+                            className={`h-3 w-3 ${
+                              likedComments[comment.id]
+                                ? "fill-red-500 text-red-500"
+                                : ""
+                            }`}
+                          />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 ml-2"
-                      >
-                        <Heart className="h-3 w-3" />
-                      </Button>
                     </div>
                   </div>
+                  {comment.replies.length > 0 && (
+                    <button
+                      className="text-xs text-muted-foreground font-semibold ml-11 hover:text-foreground"
+                      onClick={() => toggleReplies(comment.id)}
+                    >
+                      {comment.replies.length > 0 &&
+                      showCommentReplies[comment.id]
+                        ? `Hide replies (${comment.replies.length})`
+                        : `View replies (${comment.replies.length})`}
+                    </button>
+                  )}
+                  {showCommentReplies[comment.id] &&
+                    comment.replies.map((reply) => (
+                      <div key={reply.id} className="flex gap-3 ml-8">
+                        <Avatar className="h-6 w-6 flex-shrink-0">
+                          <AvatarImage
+                            src={reply.user?.profilePicUrl || "/user.png"}
+                            alt={reply.user.username}
+                          />
+                          <AvatarFallback>
+                            {reply.user.username.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/profile/${reply.user.username}`}
+                              className="font-semibold text-sm"
+                            >
+                              {reply.user.username}
+                            </Link>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(reply.dateCreated, {
+                                addSuffix: true,
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-sm mt-1">{reply.text}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {localReplyLikes[comment.id][reply.id] ?? 0} likes
+                            </span>
+                            <button
+                              className="text-xs text-muted-foreground font-semibold hover:text-foreground"
+                              onClick={() => {
+                                setParentCommentId(comment.id);
+                                setReplyTo(reply.user.username);
+                                setShowReplyPopup(true);
+                                if (bottomRef.current) {
+                                  bottomRef.current.scrollIntoView({
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }}
+                            >
+                              Reply
+                            </button>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 ml-2 flex-shrink-0"
+                          onClick={() => handleLike(comment.id, reply.id)}
+                        >
+                          <Heart
+                            className={cn(
+                              "h-2.5 w-2.5",
+                              likedReplies[comment.id][reply.id] &&
+                                "fill-red-500 text-red-500"
+                            )}
+                          />
+                        </Button>
+                      </div>
+                    ))}
                 </div>
               ))}
+              <div ref={commentScrollRef}></div>
             </ScrollArea>
           </div>
-
-          {/* Add Comment */}
-          <div className="p-4 border-t sticky bottom-0 bg-background">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src="/placeholder.svg?height=32&width=32&text=You"
-                  alt="Your avatar"
-                />
-                <AvatarFallback>You</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex items-center gap-2">
-                <Input
-                  placeholder="Add a comment..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  className="border-none shadow-none focus-visible:ring-0 px-0"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleComment();
-                  }}
-                />
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Smile className="h-4 w-4" />
-                </Button>
-              </div>
-              {comment.trim() && (
-                <Button
-                  onClick={handleComment}
-                  size="sm"
-                  variant="ghost"
-                  className="text-blue-500 font-semibold"
-                >
-                  Post
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
+        {/* Comment Box */}
+        <CommentBox
+          replyTo={replyTo}
+          showReplyPopup={showReplyPopup}
+          setShowReplyPopup={setShowReplyPopup}
+          handleComment={handleComment}
+        />
       </div>
+      <div ref={bottomRef}></div>
     </div>
   );
 }

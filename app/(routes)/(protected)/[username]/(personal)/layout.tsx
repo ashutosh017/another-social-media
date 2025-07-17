@@ -2,6 +2,7 @@ import axios from "axios";
 import { backend_url } from "@/lib/config";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { getMe } from "@/app/actions/auth.actions";
 
 export default async function UserPersonalLayout({
   children,
@@ -13,12 +14,8 @@ export default async function UserPersonalLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const username = (await params).username;
-  const me = await axios.get(`${backend_url}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const myUsername = me.data.user.username;
+  const me = await getMe();
+  const myUsername = me?.username;
   if (myUsername !== username) {
     notFound();
   }

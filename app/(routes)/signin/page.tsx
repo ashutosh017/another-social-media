@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Eye, LucideEyeOff } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import { signin } from "@/app/actions/auth.actions";
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -38,17 +38,10 @@ export default function page() {
       password: "",
     },
   });
-  const router = useRouter();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-          await axios.post("/api/signin", values);
-          router.push(`/${values.username}`)
-    } catch (error) {
-      
-    }
-
     console.log(values);
+    await signin(values);
   }
   return (
     <div>
@@ -80,7 +73,7 @@ export default function page() {
                 <FormControl>
                   <div className="flex items-center ">
                     <Input
-                    type={showPassword?`text`:`password`}
+                      type={showPassword ? `text` : `password`}
                       placeholder="Your Password"
                       className="border-r-0 rounded-r-none"
                       {...field}

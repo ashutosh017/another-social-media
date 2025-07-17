@@ -36,18 +36,20 @@ model User {
   messages               Message[]
   sentFollowRequests     FollowRequest[]           @relation("sentFollowRequests")
   receivedFollowRequests FollowRequest[]           @relation("receivedFollowRequests")
+  CommentReply           CommentReply[]
 }
 
 model Post {
-  id          String      @unique @default(uuid())
-  dateCreated DateTime    @default(now())
-  url         String
-  caption     String?
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
-  likes       PostLike[]
-  comments    Comment[]
-  savedBy     SavedPost[]
+  id           String         @unique @default(uuid())
+  dateCreated  DateTime       @default(now())
+  url          String
+  caption      String?
+  userId       String
+  user         User           @relation(fields: [userId], references: [id])
+  likes        PostLike[]
+  comments     Comment[]
+  savedBy      SavedPost[]
+  CommentReply CommentReply[]
 }
 
 model PostLike {
@@ -62,17 +64,34 @@ model PostLike {
 }
 
 model Comment {
-  id          String        @unique @default(uuid())
-  dateCreated DateTime      @default(now())
+  id          String         @unique @default(uuid())
+  dateCreated DateTime       @default(now())
   text        String
-  user        User          @relation(fields: [userId], references: [id])
+  user        User           @relation(fields: [userId], references: [id])
   userId      String
   likes       CommentLike[]
-  post        Post          @relation(fields: [postId], references: [id])
+  post        Post           @relation(fields: [postId], references: [id])
   postId      String
-  replies     Comment[]     @relation("CommentReplies")
-  parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
-  parentId    String?
+  replies     CommentReply[] @relation("CommentReplies")
+
+  // parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  // parentId    String?
+}
+
+model CommentReply {
+  id          String   @unique @default(uuid())
+  dateCreated DateTime @default(now())
+  text        String
+  likes       String[] @default([])
+
+  parent   Comment @relation("CommentReplies", fields: [parentId], references: [id])
+  parentId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
 }
 
 model CommentLike {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 
 export default async function FollowersPage({
   params,

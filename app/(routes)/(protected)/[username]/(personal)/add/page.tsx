@@ -171,7 +171,7 @@ export default function CreatePostPage() {
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage
-                  src="/placeholder.svg?height=40&width=40&text=User"
+                  src="/user.png"
                   alt="Your profile"
                 />
                 <AvatarFallback>UN</AvatarFallback>

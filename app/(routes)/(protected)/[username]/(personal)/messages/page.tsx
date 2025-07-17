@@ -1,3 +1,4 @@
+import { getMe } from "@/app/actions/auth.actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { backend_url } from "@/lib/config";
@@ -14,16 +15,10 @@ export default async function MessagesPage({
     username: string;
   };
 }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  const username = params.username;
-  const me = await axios.get(`${backend_url}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const myUsername = me.data.user.username;
-    if (myUsername !== username) notFound();
+  const username = (await params).username;
+  const me = await getMe();
+  const myUsername = me?.username;
+  if (myUsername !== username) notFound();
   console.log("my username: ", myUsername);
   console.log("username: ", username);
 

@@ -122,3 +122,7 @@
 .bottom-bar-btn-style{
   @apply flex justify-center items-center  border border-white w-full py-2
 }
+
+.follow-btn-style{
+  @apply w-full 
+}

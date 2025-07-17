@@ -1,23 +1,24 @@
+import { getMe } from "@/app/actions/auth.actions";
 import BottomBar from "@/components/bottom-bar";
-import { getMe } from "@/lib/actions";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { createContext, useContext } from "react";
+import { MeContext, MeContextProvider } from "@/components/me-context";
+
 
 export default async function ProtectedRoutesLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const token = (await cookies()).get("token")?.value;
-  if (!token) {
-    redirect("/signin");
-  }
+  const me = await getMe();
+  console.log("me in layout.tsx: ", me)
 
   return (
-      <div className="max-w-md mx-auto ">
+    <div className="max-w-md mx-auto ">
+      <MeContextProvider value={me}>
         {children}
         <BottomBar />
-      </div>
+      </MeContextProvider>
+    </div>
   );
 }
+
+export const dynamic = "force-dynamic"

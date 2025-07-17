@@ -1,11 +1,11 @@
+import { getMe } from "@/app/actions/auth.actions";
 import { User as PrismaUser } from "@/app/generated/prisma";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getMe } from "@/lib/actions";
-import { prisma } from "@/lib/db";
-import { Bookmark, Divide, Grid, Settings } from "lucide-react";
+import prisma from "@/lib/db";
+import { Bookmark, Divide, Grid, Lock, Settings } from "lucide-react";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,8 +27,18 @@ export default async function page({
   if (!token) {
     redirect("/signin");
   }
-  const me = await getMe(token);
-  const isMe: boolean = me.username === username;
+  const me = await getMe();
+  const isMe: boolean = me?.username === username;
+  const iFollow: boolean = !!(await prisma.follow.findFirst({
+    where: {
+      follower: {
+        username: me?.username,
+      },
+      following: {
+        username,
+      },
+    },
+  }));
 
   const user = await prisma.user.findFirst({
     where: {
@@ -93,16 +103,23 @@ export default async function page({
           <h2 className="font-semibold">{user?.name}</h2>
           <p className="text-sm mt-1">{user?.bio}</p>
         </div>
-        {isMe ? (
-          <div>
+
+        <div>
+          {isMe ? (
             <div className="mt-4 flex gap-2">
               <EditProfileDialog />
               <Button variant="outline" className="flex-1">
                 Share Profile
               </Button>
             </div>
+          ) : !iFollow ? (
+            <Button className="follow-btn-style">Follow</Button>
+          ) : (
+            <Button className="follow-btn-style">Following</Button>
+          )}
 
-            {/* Story Highlights */}
+          {/* Story Highlights */}
+          {user.public && (
             <div className="mt-6">
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -118,12 +135,13 @@ export default async function page({
                 ))}
               </div>
             </div>
-          </div>
-        ) : (
-          <div></div>
-        )}
+          )}
+        </div>
+
+        <div></div>
       </div>
-      {isMe ? (
+
+      {user.public ? (
         <Tabs defaultValue="posts" className="">
           <TabsList className="w-full grid grid-cols-2  ">
             <TabsTrigger value="posts" className="py-3">
@@ -136,7 +154,11 @@ export default async function page({
           <TabsContent value="posts" className="mt-0  ">
             <div className="grid grid-cols-3 gap-0.5">
               {posts.map((post, i) => (
-                <div key={i} className="aspect-square relative">
+                <Link
+                  href={`/posts/${post.id}`}
+                  key={i}
+                  className="aspect-square relative"
+                >
                   <Image
                     src={post.url}
                     alt={`Post ${i + 1}`}
@@ -145,7 +167,7 @@ export default async function page({
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
                   />
-                </div>
+                </Link>
               ))}
             </div>
           </TabsContent>
@@ -166,8 +188,23 @@ export default async function page({
           </TabsContent>
         </Tabs>
       ) : (
-        <div></div>
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
+            <Lock className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">
+            This Account is Private
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-sm">
+            Follow this account to see their photos and videos.
+          </p>
+          {/* {user.hasRequestPending && (
+            <p className="text-sm text-muted-foreground">Your follow request is pending approval.</p>
+          )} */}
+        </div>
       )}
+
+      <div></div>
     </div>
   );
 }

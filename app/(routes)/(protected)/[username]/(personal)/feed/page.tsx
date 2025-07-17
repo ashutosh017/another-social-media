@@ -21,6 +21,7 @@ import axios from "axios";
 import { backend_url } from "@/lib/config";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { getMe } from "@/app/actions/auth.actions";
 
 export default async function HomePage({
   params,
@@ -32,12 +33,8 @@ export default async function HomePage({
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const username = params.username;
-  const me = await axios.get(`${backend_url}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const myUsername = me.data.username;
+  const me = await getMe();
+  const myUsername = me?.username;
 
   return (
     <div className="pb-16">

@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 
