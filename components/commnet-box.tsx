@@ -4,45 +4,18 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Smile, X } from "lucide-react";
 type CommentBoxProps = {
-  showReplyPopup: boolean;
-  replyTo: string;
-  setShowReplyPopup: (val: boolean) => void;
+  commentRef:RefObject<HTMLInputElement | null>;
   handleComment: (comment: string) => void;
 };
 export const CommentBox = (
   ({
-    showReplyPopup,
-    replyTo,
-    setShowReplyPopup,
+    commentRef,
     handleComment,
   }: CommentBoxProps) => {
     console.log("comment box render")
     const [comment, setComment] = useState("");
-    const commentRef = useRef<HTMLInputElement | null>(null);
-    useEffect(() => {
-      if (replyTo && commentRef?.current) {
-        commentRef.current.value = `@${replyTo} `;
-        commentRef.current.focus();
-      }
-    });
     return (
       <div className="">
-        {showReplyPopup && (
-          <div className="px-4 py-2 bg-muted/50 border-b flex items-center justify-between ">
-            <span className="text-sm text-muted-foreground">
-              Replying to <span className="font-semibold">@{replyTo}</span>
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setShowReplyPopup(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
         <div className="p-4 border-t sticky bottom-0 bg-background">
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">

@@ -1,2 +1,2 @@
-const a = 4+[1,2][1]
-console.log(a)
+const a = undefined;
+console.log(a??1)

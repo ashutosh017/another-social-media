@@ -79,7 +79,10 @@ export default async function page({
       <div className="p-4 border-b">
         <div className="flex items-center gap-8">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user?.profilePicUrl ?? undefined} alt="Profile" />
+            <AvatarImage
+              src={user?.profilePicUrl ?? "/user.png"}
+              alt="Profile"
+            />
             <AvatarFallback>UN</AvatarFallback>
           </Avatar>
 
@@ -112,10 +115,10 @@ export default async function page({
                 Share Profile
               </Button>
             </div>
-          ) : !iFollow ? (
-            <Button className="follow-btn-style">Follow</Button>
           ) : (
-            <Button className="follow-btn-style">Following</Button>
+            <Button className="follow-btn-style">
+              {iFollow ? "Following" : "Follow"}
+            </Button>
           )}
 
           {/* Story Highlights */}

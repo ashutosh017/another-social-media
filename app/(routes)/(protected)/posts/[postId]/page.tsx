@@ -11,11 +11,16 @@ import {
   MessageCircle,
   MoreHorizontal,
   Send,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { fetchPost, toggleLikePost } from "@/app/actions/posts.actions";
+import {
+  fetchPost,
+  toggleLikePost,
+  toggleSavePost,
+} from "@/app/actions/posts.actions";
 import { MeContext } from "@/components/me-context";
 import {
   addComment,
@@ -25,6 +30,7 @@ import {
 import { PostType } from "@/types/post.types";
 import { cn } from "@/lib/utils";
 import { CommentBox } from "@/components/commnet-box";
+import { LikesModal } from "@/components/likes-modal";
 
 export default function PostPage() {
   console.log("render");
@@ -56,12 +62,19 @@ export default function PostPage() {
   >({});
   const [showReplyPopup, setShowReplyPopup] = useState(false);
   const [replyTo, setReplyTo] = useState("");
+  const [newCommentId, setNewCommentId] = useState("");
+  const [isLikesWindowOpen, setIsLikesWindowOpen] = useState<boolean>(false);
+  const commentRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const commentScrollRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     async function fetchPostWithId() {
       const p = await fetchPost(postId);
       if (p) {
+        if (p.savedBy.length > 0) {
+          setIsSaved(true);
+        }
         const initialCommentLikes: Record<string, number> = {};
         const initialCommentLiked: Record<string, boolean> = {};
         const initialReplyLikes: Record<string, Record<string, number>> = {};
@@ -91,7 +104,7 @@ export default function PostPage() {
         setLikedComments(initialCommentLiked);
         setLocalReplyLikes(initialReplyLikes);
         setLikedReplies(initialReplyLiked);
-        const myLike = p.likes.find((like) => like.userId === me?.id);
+        const myLike = p.likes.find((like) => like.user.id === me?.id);
         if (myLike) {
           setIsLiked(true);
         }
@@ -100,11 +113,17 @@ export default function PostPage() {
     fetchPostWithId();
   }, []);
   useEffect(() => {
-    const el = document.getElementById("new");
+    const el = document.getElementById(newCommentId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [post]);
+  }, [post?.comments, newCommentId]);
+  useEffect(() => {
+    if (replyTo && commentRef?.current) {
+      commentRef.current.value = `@${replyTo} `;
+      commentRef.current.focus();
+    }
+  });
 
   const handleLike = (commentId?: string, replyId?: string) => {
     if (commentId && !replyId) {
@@ -144,6 +163,7 @@ export default function PostPage() {
 
   const handleSave = () => {
     setIsSaved(!isSaved);
+    toggleSavePost(postId);
   };
 
   const handleComment = useCallback(
@@ -157,34 +177,70 @@ export default function PostPage() {
         setParentCommentId(null);
         setReplyTo("");
         setShowReplyPopup(false);
-        setPost((prev) =>
-          prev
-            ? {
-                ...prev,
-                comments: [
-                  ...prev.comments,
-                  {
-                    id: "new",
-                    dateCreated: new Date(),
-                    text: comment,
-                    user: {
-                      name: me?.name,
-                      username: me?.username,
-                      profilePicUrl: me?.profilePicUrl,
-                      isVerified: me?.isVerified,
+        const newCommentId = crypto.randomUUID();
+        if (parentCommentId) {
+          const reply = comment;
+          setPost((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  comments: prev.comments.map((comment) =>
+                    comment.id === parentCommentId
+                      ? {
+                          ...comment,
+                          replies: [
+                            ...comment.replies,
+
+                            {
+                              id: newCommentId,
+                              userId: me.id,
+                              parentId: parentCommentId,
+                              postId: postId,
+                              dateCreated: new Date(),
+                              text: reply,
+                              user: {
+                                name: me?.name,
+                                username: me?.username,
+                                profilePicUrl: me?.profilePicUrl,
+                                isVerified: me?.isVerified,
+                              },
+                              likes: [],
+                            },
+                          ],
+                        }
+                      : comment
+                  ),
+                }
+              : null
+          );
+        } else {
+          setPost((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  comments: [
+                    ...prev.comments,
+                    {
+                      id: newCommentId,
+                      dateCreated: new Date(),
+                      text: comment,
+                      user: {
+                        name: me?.name,
+                        username: me?.username,
+                        profilePicUrl: me?.profilePicUrl,
+                        isVerified: me?.isVerified,
+                      },
+
+                      likes: [],
+                      replies: [],
                     },
-                    likes: [],
-                    replies: [],
-                  },
-                ],
-              }
-            : null
-        );
-        // if (commentScrollRef.current) {
-        //   console.log("scroll")
-        //  commentScrollRef.current.scrollIntoView({block:"nearest", behavior:"smooth"})
-        // }
+                  ],
+                }
+              : null
+          );
+        }
       }
+      setNewCommentId(newCommentId);
     },
     [parentCommentId]
   );
@@ -264,10 +320,11 @@ export default function PostPage() {
               </Button>
               <Button
                 onClick={() => {
-                  bottomRef.current?.scrollIntoView({
+                  commentRef.current?.scrollIntoView({
                     block: "nearest",
                     behavior: "smooth",
                   });
+                  commentRef.current?.focus();
                 }}
                 variant="ghost"
                 size="icon"
@@ -292,12 +349,16 @@ export default function PostPage() {
           </div>
 
           <div className="space-y-2">
-            <p className="font-semibold text-sm">{postLikes} likes</p>
+            <p
+              onClick={() => {
+                setIsLikesWindowOpen(true);
+              }}
+              className="font-semibold text-sm cursor-pointer"
+            >
+              {postLikes} likes
+            </p>
             <div className="text-sm">
-              <Link
-                href={`/profile/${post?.user.username}`}
-                className="font-semibold"
-              >
+              <Link href={`/${post?.user.username}`} className="font-semibold">
                 {post?.user.username}
               </Link>{" "}
               {post?.caption}
@@ -400,7 +461,11 @@ export default function PostPage() {
                   )}
                   {showCommentReplies[comment.id] &&
                     comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-3 ml-8">
+                      <div
+                        id={reply.id}
+                        key={reply.id}
+                        className="flex gap-3 ml-8"
+                      >
                         <Avatar className="h-6 w-6 flex-shrink-0">
                           <AvatarImage
                             src={reply.user?.profilePicUrl || "/user.png"}
@@ -413,7 +478,7 @@ export default function PostPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <Link
-                              href={`/profile/${reply.user.username}`}
+                              href={`/${reply.user.username}`}
                               className="font-semibold text-sm"
                             >
                               {reply.user.username}
@@ -468,15 +533,35 @@ export default function PostPage() {
             </ScrollArea>
           </div>
         </div>
-        {/* Comment Box */}
-        <CommentBox
-          replyTo={replyTo}
-          showReplyPopup={showReplyPopup}
-          setShowReplyPopup={setShowReplyPopup}
-          handleComment={handleComment}
-        />
+        <div className="relative w-full max-w-md">
+          {/* Floating Reply Popup */}
+          {showReplyPopup && (
+            <div className="absolute bottom-full w-full px-4 py-4 bg-muted border rounded-t-md flex items-center justify-between z-10">
+              <span className="text-sm text-muted-foreground">
+                Replying to <span className="font-semibold">@{replyTo}</span>
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setShowReplyPopup(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Comment Box */}
+          <CommentBox commentRef={commentRef} handleComment={handleComment} />
+        </div>
       </div>
       <div ref={bottomRef}></div>
+      <LikesModal
+        likes={post?.likes ? post.likes : []}
+        onOpenChange={setIsLikesWindowOpen}
+        open={isLikesWindowOpen}
+        totalLikes={post?.likes ? post.likes.length : 0}
+      />
     </div>
   );
 }

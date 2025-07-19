@@ -42,6 +42,16 @@ export type PostType =
         }[];
       }[];
       likes: {
+        user: {
+          id: string;
+          name: string;
+          username: string;
+          profilePicUrl: string | null;
+          isVerified: boolean;
+          followers: { followerId: string }[];
+        };
+      }[];
+      savedBy: {
         userId: string;
       }[];
     } & {

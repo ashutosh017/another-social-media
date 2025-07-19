@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,21 +17,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import axios from "axios";
+import { editProfile } from "@/app/actions/profile.actions";
+import { User } from "@/app/generated/prisma";
+import { MeContext } from "./me-context";
+import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
 
 export function EditProfileDialog() {
   const [open, setOpen] = useState(false);
   const [profilePic, setProfilePic] = useState("");
-  const profilePicRef = useRef<string>("")
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [website, setWebsite] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  // const { user, setUser } = useUserStore();
-  const [user, setUser] = useState<any>(null)
+  const user = useContext(MeContext);
+  if (!user) {
+    return <div>Your profile does not exist.</div>;
+  }
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfilePic(e.target.value);
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfilePic(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,65 +65,22 @@ export function EditProfileDialog() {
 
   const handleSave = async () => {
     setLoading(true);
-    // const token = await getToken();
-    // if (!token) {
-    //   return;
-    // }
-
-    await handleUpload();
-    console.log("profilePicRef.current", profilePicRef.current);
-    const response = await axios.put(
-      "http://localhost:3001/api/v1/users/profile",
-      {
-        profilePic:
-          profilePicRef.current.length > 0 ? profilePicRef.current : (user?.profilePic ?? ""),
-        name: name.length > 0 ? name : (user?.name ?? ""),
-        username: username.length > 0 ? username : (user?.username ?? ""),
-        about: bio.length > 0 ? bio : (user?.description ?? ""),
-      },
-      {
-        headers: {
-          // Authorization: `Bearer ${token}`,
-        },
+    try {
+      let profilePicUrl;
+      if (profilePic) {
+        profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
+          .secure_url;
       }
-    );
-    if (response.status === 200) {
-      setOpen(false);
+      await editProfile({
+        profilePicUrl,
+        bio: bio !== "" ? bio : undefined,
+        username: username !== "" ? username : undefined,
+        name: name !== "" ? name : undefined,
+      });
+    } catch (error) {
+      console.log(error);
     }
     setLoading(false);
-
-  };
-  const handleUpload = async () => {
-    console.log("handleupload called");
-    if (!file) return;
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "instagram-app"); // replace with your preset
-
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-      // setImageUrl(data.secure_url);
-
-      // ✅ Send URL to your backend
-      // await axios.post("/api/your-backend-endpoint", {
-      //   imageUrl: data.secure_url,
-      // });
-      console.log("Image uploaded:", data.secure_url);
-      setProfilePic(data.secure_url);
-      profilePicRef.current = data.secure_url;
-    } catch (err) {
-      console.error("Upload failed:", err);
-    } 
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -129,21 +99,40 @@ export function EditProfileDialog() {
             <div className="relative">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src=""
+                  src={user.profilePicUrl || "./user.png"}
                   alt="Profile"
                 />
                 <AvatarFallback>UN</AvatarFallback>
               </Avatar>
-                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full h-8 w-8">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleProfilePicChange}
+              />
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute bottom-0 right-0 rounded-full h-8 w-8"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+              >
                 <Camera className="h-4 w-4" />
                 <span className="sr-only">Change profile picture</span>
               </Button>
             </div>
           </div>
 
-        
-          
-
+          <div className="grid gap-2">
+            <Label htmlFor="username">Name</Label>
+            <Input
+              id="username"
+              defaultValue={user?.name}
+              onChange={handleNameChange}
+            />
+          </div>
           <div className="grid gap-2">
             <Label htmlFor="username">Username</Label>
             <Input
@@ -157,18 +146,9 @@ export function EditProfileDialog() {
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
-              defaultValue={user?.description}
+              defaultValue={user?.bio ? user?.bio : ""}
               rows={3}
               onChange={handleBioChange}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="website">Website</Label>
-            <Input
-              id="website"
-              defaultValue={website}
-              onChange={handleWebsiteChange}
             />
           </div>
         </div>
@@ -176,9 +156,28 @@ export function EditProfileDialog() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button disabled={loading}  onClick={handleSave}>{loading?"Saving Changes...":"Save Changes"}</Button>
+          <Button
+            disabled={loading}
+            onClick={async () => {
+              setLoading(true);
+              let profilePicUrl;
+              if (profilePic) {
+                profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
+                  .secure_url;
+              }
+              await editProfile({
+                profilePicUrl,
+                bio: bio !== "" ? bio : undefined,
+                username: username !== "" ? username : undefined,
+                name: name !== "" ? name : undefined,
+              });
+              setLoading(false);
+              setOpen(false);
+            }}
+          >
+            {loading ? "Saving Changes..." : "Save Changes"}
+          </Button>
         </DialogFooter>
-        
       </DialogContent>
     </Dialog>
   );

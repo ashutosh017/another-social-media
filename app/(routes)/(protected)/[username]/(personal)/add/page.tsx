@@ -14,6 +14,8 @@ import axios from "axios";
 import { backend_url, cloudinary_cloud_name } from "@/lib/config";
 import { promise } from "zod";
 import { resolve } from "path";
+import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
+import { createNewPost } from "@/app/actions/posts.actions";
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -64,29 +66,13 @@ export default function CreatePostPage() {
   };
 
   const handleShare = async () => {
-    // In a real app, you would upload the image and create the post
     setIsLoading(true);
     console.log("Sharing post:", { image: selectedImage, caption, location });
-    const formData = new FormData();
-
-    formData.append("file", selectedImage!);
-    formData.append("upload_preset", "social-media-app");
-    const res = await axios.post(
-      `https://api.cloudinary.com/v1_1/${cloudinary_cloud_name}/image/upload`,
-      formData
-    );
+    if (!selectedImage) return;
+    const res = await uploadImageToCloudinary(selectedImage);
     console.log(res.data.secure_url);
     try {
-      const uploadRes = await axios.post(
-        `${backend_url}/posts`,
-        {
-          postUrl: res.data.secure_url,
-          caption,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      await createNewPost(res.data.secure_url, caption);
     } catch (error) {
       console.log(error);
     }
@@ -120,7 +106,7 @@ export default function CreatePostPage() {
                 src={selectedImage || "/placeholder.svg"}
                 alt="Selected image"
                 fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover rounded-lg"
               />
               <Button
@@ -170,10 +156,7 @@ export default function CreatePostPage() {
             {/* User Info */}
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src="/user.png"
-                  alt="Your profile"
-                />
+                <AvatarImage src="/user.png" alt="Your profile" />
                 <AvatarFallback>UN</AvatarFallback>
               </Avatar>
               <span className="font-semibold">username</span>
