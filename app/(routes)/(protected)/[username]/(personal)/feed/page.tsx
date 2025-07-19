@@ -17,22 +17,19 @@ import {
   Send,
   MessageSquare,
 } from "lucide-react";
-import axios from "axios";
-import { backend_url } from "@/lib/config";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
 import { getMe } from "@/app/actions/auth.actions";
 
 export default async function HomePage({
   params,
 }: {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const username = params.username;
+  const username = (await params).username;
   const me = await getMe();
   const myUsername = me?.username;
 

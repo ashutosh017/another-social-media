@@ -11,9 +11,9 @@ import { notFound } from "next/navigation";
 export default async function MessagesPage({
   params,
 }: {
-  params: {
+  params: Promise<{
     username: string;
-  };
+} >;
 }) {
   const username = (await params).username;
   const me = await getMe();
