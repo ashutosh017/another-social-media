@@ -41,3 +41,20 @@ export const searchUsers = async (query: string) => {
   console.log("users:", users);
   return users;
 };
+
+export const fetchUsertDetails = async (username: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      username,
+    },
+    include: {
+      posts: true,
+      followers: true,
+      following: true,
+    },
+    omit: {
+      password: true,
+    },
+  });
+  return user;
+};

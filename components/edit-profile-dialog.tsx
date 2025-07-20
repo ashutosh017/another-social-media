@@ -16,21 +16,23 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
-import axios from "axios";
 import { editProfile } from "@/app/actions/profile.actions";
-import { User } from "@/app/generated/prisma";
-import { MeContext } from "./me-context";
 import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
+import { UserType } from "@/types/user.types";
 
-export function EditProfileDialog() {
+export function EditProfileDialog({
+  user,
+  setUser,
+}: {
+  user: UserType;
+  setUser: React.Dispatch<React.SetStateAction<UserType>>;
+}) {
   const [open, setOpen] = useState(false);
   const [profilePic, setProfilePic] = useState("");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
-  const user = useContext(MeContext);
   if (!user) {
     return <div>Your profile does not exist.</div>;
   }
@@ -57,10 +59,6 @@ export function EditProfileDialog() {
 
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBio(e.target.value);
-  };
-
-  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWebsite(e.target.value);
   };
 
   const handleSave = async () => {
@@ -99,7 +97,7 @@ export function EditProfileDialog() {
             <div className="relative">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src={user.profilePicUrl || "./user.png"}
+                  src={profilePic || user.profilePicUrl || "./user.png"}
                   alt="Profile"
                 />
                 <AvatarFallback>UN</AvatarFallback>
@@ -153,14 +151,20 @@ export function EditProfileDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setProfilePic("");
+              setOpen(false);
+            }}
+          >
             Cancel
           </Button>
           <Button
             disabled={loading}
             onClick={async () => {
               setLoading(true);
-              let profilePicUrl;
+              let profilePicUrl: string | undefined;
               if (profilePic) {
                 profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
                   .secure_url;
@@ -172,6 +176,18 @@ export function EditProfileDialog() {
                 name: name !== "" ? name : undefined,
               });
               setLoading(false);
+              setUser(
+                (prev) =>
+                  prev && {
+                    ...prev,
+                    profilePicUrl: profilePicUrl
+                      ? profilePicUrl
+                      : prev?.profilePicUrl,
+                    bio: bio ? bio : prev?.bio,
+                    username: username ? username : prev?.username,
+                    name: name ? name : prev?.name,
+                  }
+              );
               setOpen(false);
             }}
           >
