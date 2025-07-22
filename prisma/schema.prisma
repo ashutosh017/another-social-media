@@ -161,14 +161,7 @@ model FollowRequest {
   senderId    String
   receiver    User                @relation("receivedFollowRequests", fields: [receiverId], references: [id])
   receiverId  String
-  createdAt   DateTime            @default(now())
-  status      FollowRequestStatus @default(PENDING)
+
 
   @@unique([senderId, receiverId])
-}
-
-enum FollowRequestStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
 }

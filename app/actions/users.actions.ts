@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/db";
+import { getMe } from "./auth.actions";
 
 export const searchUsers = async (query: string) => {
   if (!query.trim()) {
@@ -51,6 +52,8 @@ export const fetchUsertDetails = async (username: string) => {
       posts: true,
       followers: true,
       following: true,
+      sentFollowRequests: true,
+      receivedFollowRequests: true,
     },
     omit: {
       password: true,
@@ -58,3 +61,4 @@ export const fetchUsertDetails = async (username: string) => {
   });
   return user;
 };
+

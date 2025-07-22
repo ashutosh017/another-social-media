@@ -1,42 +1,29 @@
+"use client";
+
+import { fetchFollowers } from "@/app/actions/follow.actions";
+import { MeContext } from "@/components/me-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { followersType } from "@/types/follow.types";
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
-import prisma from "@/lib/db";
+import { useContext, useEffect, useState } from "react";
 
-export default async function FollowersPage({
-  params,
-}: {
-  params: Promise<{
-    username: string;
-  }>;
-}) {
-  const followers = await prisma.user.findFirst({
-    where: {
-      username: (await params).username,
-    },
-    select: {
-      followers: {
-        select: {
-          follower: {
-            select: {
-              name: true,
-              username: true,
-              profilePicUrl: true,
-              followers: {
-                where: {
-                  follower: {
-                    username: (await params).username,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+export default function FollowersPage() {
+  const [followers, setFollowers] = useState<followersType>();
+  const me = useContext(MeContext);
+  useEffect(() => {
+    async function fetchFollowersCaller() {
+      if (!me) return;
+      const fetchedFollowers = await fetchFollowers(me.username);
+      console.log("fetched followers: ", fetchedFollowers);
+      setFollowers(fetchedFollowers);
+    }
+    fetchFollowersCaller();
+  }, []);
+  if (!followers) {
+  }
 
   return (
     <div className="pb-16">
@@ -55,8 +42,8 @@ export default async function FollowersPage({
       </div>
 
       <div className="divide-y">
-        {followers &&
-          followers.followers.map(({ follower }) => (
+        {followers ? (
+          followers.map(({ dateCreated, follower }) => (
             <div
               key={follower.username}
               className="flex items-center justify-between p-4"
@@ -75,7 +62,7 @@ export default async function FollowersPage({
                   </p>
                 </div>
               </div>
-              {follower.followers.length > 0 ? (
+              {follower.following.length > 0 ? (
                 <Button variant="outline" size="sm" className="rounded-lg">
                   Following
                 </Button>
@@ -85,7 +72,10 @@ export default async function FollowersPage({
                 </Button>
               )}
             </div>
-          ))}
+          ))
+        ) : (
+          <div className="text-center py-4 ">Loading...</div>
+        )}
       </div>
     </div>
   );

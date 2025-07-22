@@ -1,10 +1,10 @@
 export type UserType =
   | ({
       posts: {
-        id: string;
-        dateCreated: Date;
         caption: string | null;
+        id: string;
         url: string;
+        dateCreated: Date;
         userId: string;
       }[];
       followers: {
@@ -19,10 +19,22 @@ export type UserType =
         followerId: string;
         followingId: string;
       }[];
+      sentFollowRequests: {
+        id: string;
+        dateCreated: Date;
+        senderId: string;
+        receiverId: string;
+      }[];
+      receivedFollowRequests: {
+        id: string;
+        dateCreated: Date;
+        senderId: string;
+        receiverId: string;
+      }[];
     } & {
       id: string;
-      dateCreated: Date;
       name: string;
+      dateCreated: Date;
       username: string;
       profilePicUrl: string | null;
       bio: string | null;

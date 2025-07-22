@@ -1,5 +1,6 @@
 "use client";
 
+import { sendUnsendFollowRequest } from "@/app/actions/follow.actions";
 import { fetchUsertDetails } from "@/app/actions/users.actions";
 import { User as PrismaUser } from "@/app/generated/prisma";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
@@ -9,6 +10,7 @@ import { ModeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { UserType } from "@/types/user.types";
 import { Bookmark, Grid, Lock, Settings } from "lucide-react";
 import Image from "next/image";
@@ -17,15 +19,54 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 
 export default function page() {
-  const { username } = useParams<{ username: string }>();
-  const [isLoading, setIsLoading] = useState(true);
-  console.log("username: ", username);
-
   const me = useContext(MeContext);
+  const { username } = useParams<{ username: string }>();
+  const [user, setUser] = useState<UserType>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [followStatus, setFollowStatus] = useState<
+    "Following" | "Requested" | "Follow"
+  >();
   if (!me) {
     return <div>The page your are looking does not exist.</div>;
   }
-  const [user, setUser] = useState<UserType>(null);
+
+  const handleFollow = async () => {
+    if (!user) return;
+    followStatus === "Follow"
+      ? user.public
+        ? setFollowStatus("Following")
+        : setFollowStatus("Requested")
+      : setFollowStatus("Follow");
+    if (user.public && followStatus === "Follow") {
+      setUser(
+        (prev) =>
+          prev && {
+            ...prev,
+            following: [
+              ...prev.following,
+              {
+                dateCreated: new Date(),
+                followerId: me.id,
+                followingId: user.id,
+                id: "new_follower",
+              },
+            ],
+          }
+      );
+    } else if (followStatus === "Following") {
+      setUser(
+        (prev) =>
+          prev && {
+            ...prev,
+            following: prev.following.slice(0, prev.following.length - 1),
+          }
+      );
+    }
+    sendUnsendFollowRequest(user.id);
+  };
+
+  console.log("username: ", username);
+
   useEffect(() => {
     async function fetchUserWithUsername() {
       if (!username) {
@@ -33,6 +74,25 @@ export default function page() {
         return;
       }
       const currentUser = await fetchUsertDetails(username);
+      const doIFollowCurrentUser = currentUser?.following.some(
+        (following) => following.followerId === me?.id
+      );
+      console.log("current user: ", currentUser?.username);
+      console.log("me: ", me?.username);
+
+      if (doIFollowCurrentUser) {
+        setFollowStatus("Following");
+      } else {
+        const followRequestPending = currentUser?.receivedFollowRequests.some(
+          (req) => req.senderId === me?.id
+        );
+        if (followRequestPending) {
+          setFollowStatus("Requested");
+        } else {
+          setFollowStatus("Follow");
+        }
+      }
+
       setUser(currentUser);
       setIsLoading(false);
     }
@@ -44,14 +104,13 @@ export default function page() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <h1 className="text-xl font-semibold flex-1 text-center">username</h1>
+        <h1 className="text-xl font-semibold flex-1 text-center">
+          {user?.username ?? "username"}
+        </h1>
         <div className="flex gap-2 justify-end items-center">
           <ModeToggle />
 
-          <Link
-            href={`/${user?.username}/settings`}
-            className=""
-          >
+          <Link href={`/${user?.username}/settings`} className="">
             <Settings className="h-5 w-5" />
           </Link>
         </div>
@@ -72,11 +131,11 @@ export default function page() {
               <div className="text-sm text-muted-foreground">Posts</div>
             </Link>
             <Link href={`/${user?.username}/followers `} className="block">
-              <div className="font-semibold">{user?.followers.length}</div>
+              <div className="font-semibold">{user?.following.length}</div>
               <div className="text-sm text-muted-foreground">Followers</div>
             </Link>
             <Link href={`/${user?.username}/following`} className="block">
-              <div className="font-semibold">{user?.following.length}</div>
+              <div className="font-semibold">{user?.followers.length}</div>
               <div className="text-sm text-muted-foreground">Following</div>
             </Link>
           </div>
@@ -96,10 +155,15 @@ export default function page() {
               </Button>
             </div>
           ) : (
-            <Button className="follow-btn-style">
-              {user?.followers.some((follower) => follower.followerId === me.id)
-                ? "Following"
-                : "Follow"}
+            <Button
+              onClick={handleFollow}
+              className={cn(
+                "follow-btn-style",
+                followStatus === "Follow" &&
+                  "bg-blue-700 hover:bg-blue-800 text-white"
+              )}
+            >
+              {followStatus ?? "Follow"}
             </Button>
           )}
 

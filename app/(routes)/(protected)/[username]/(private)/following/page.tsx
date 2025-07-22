@@ -21,6 +21,7 @@ export default async function FollowingPage({
       following: true,
     },
   });
+  
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
