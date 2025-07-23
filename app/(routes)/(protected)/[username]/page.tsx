@@ -15,7 +15,7 @@ import { UserType } from "@/types/user.types";
 import { Bookmark, Grid, Lock, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 
 export default function page() {
@@ -23,6 +23,7 @@ export default function page() {
   const { username } = useParams<{ username: string }>();
   const [user, setUser] = useState<UserType>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const [followStatus, setFollowStatus] = useState<
     "Following" | "Requested" | "Follow"
   >();
@@ -74,6 +75,9 @@ export default function page() {
         return;
       }
       const currentUser = await fetchUsertDetails(username);
+      if (!currentUser) {
+        router.replace("/signin");
+      }
       const doIFollowCurrentUser = currentUser?.following.some(
         (following) => following.followerId === me?.id
       );

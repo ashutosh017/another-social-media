@@ -7,6 +7,7 @@ export type followersType =
         username: string;
         profilePicUrl: string | null;
         isVerified: boolean;
+        public: boolean;
         receivedFollowRequests: {
           id: string;
           dateCreated: Date;
@@ -32,6 +33,7 @@ export type followingTyep =
         username: string;
         profilePicUrl: string | null;
         isVerified: boolean;
+        public:boolean;
         following: {
           id: string;
           dateCreated: Date;

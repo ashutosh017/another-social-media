@@ -106,6 +106,7 @@ export const fetchFollowers = async (username: string) => {
         dateCreated: true,
         follower: {
           select: {
+            public: true,
             profilePicUrl: true,
             username: true,
             name: true,
@@ -150,6 +151,7 @@ export const fetchFollowing = async (username: string) => {
           select: {
             profilePicUrl: true,
             username: true,
+            public: true,
             name: true,
             isVerified: true,
             id: true,
@@ -164,3 +166,20 @@ export const fetchFollowing = async (username: string) => {
     return null;
   }
 };
+
+export async function removeFollower(followerId: string) {
+  const me = await getMe();
+  if (!me) return;
+  try {
+    await prisma.follow.delete({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId: me.id,
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
