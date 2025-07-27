@@ -8,6 +8,7 @@ export async function editProfile(values: {
   username?: string;
   name?: string;
   bio?: string;
+  public?:boolean
 }) {
   const me = await getMe();
   if (!me) {
@@ -15,6 +16,7 @@ export async function editProfile(values: {
   }
   try {
     console.log("updating starts");
+    console.log("values: ",values)
     await prisma.user.update({
       where: {
         id: me.id,
@@ -27,3 +29,24 @@ export async function editProfile(values: {
   }
   console.log("edit profile called")
 }
+
+export const fetchUsertDetails = async (username: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      username,
+    },
+    include: {
+      posts: true,
+      tagged:true,
+      followers: true,
+      following: true,
+      sentFollowRequests: true,
+      receivedFollowRequests: true,
+    },
+    omit: {
+      password: true,
+    },
+  });
+  return user;
+};
+

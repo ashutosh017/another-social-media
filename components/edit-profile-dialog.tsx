@@ -18,10 +18,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Globe, Info, Lock } from "lucide-react";
 import { editProfile } from "@/app/actions/profile.actions";
 import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
-import { UserType } from "@/types/user.types";
 import { Switch } from "./ui/switch";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { ScrollArea } from "./ui/scroll-area";
+import { UserType } from "@/app/actions/types";
 
 export function EditProfileDialog({
   user,
@@ -67,24 +67,37 @@ export function EditProfileDialog({
 
   const handleSave = async () => {
     setLoading(true);
-    try {
-      let profilePicUrl;
-      if (profilePic) {
-        profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
-          .secure_url;
-      }
-      await editProfile({
-        profilePicUrl,
-        bio: bio !== "" ? bio : undefined,
-        username: username !== "" ? username : undefined,
-        name: name !== "" ? name : undefined,
-      });
-    } catch (error) {
-      console.log(error);
+    let profilePicUrl: string | undefined;
+    if (profilePic) {
+      profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
+        .secure_url;
     }
+    await editProfile({
+      profilePicUrl,
+      bio: bio !== "" ? bio : undefined,
+      username: username !== "" ? username : undefined,
+      name: name !== "" ? name : undefined,
+      public:!isPrivate
+    });
     setLoading(false);
+    setUser(
+      (prev) =>
+        prev && {
+          ...prev,
+          profilePicUrl: profilePicUrl ? profilePicUrl : prev?.profilePicUrl,
+          bio: bio ? bio : prev?.bio,
+          username: username ? username : prev?.username,
+          name: name ? name : prev?.name,
+          public: !isPrivate,
+        }
+    );
+    setBio("");
+    setUsername("");
+    setName("");
+    setOpen(false);
   };
   function handlePrivacyToggle(checked: boolean): void {
+    console.log("privace it set to: ", checked)
     setIsPrivate(checked);
   }
   return (
@@ -187,7 +200,7 @@ export function EditProfileDialog({
                     </p>
                   </div>
                   <Switch
-                    checked={isPrivate}
+                    defaultChecked={!user.public}
                     onCheckedChange={handlePrivacyToggle}
                   />
                 </div>
@@ -260,37 +273,7 @@ export function EditProfileDialog({
           >
             Cancel
           </Button>
-          <Button
-            disabled={loading}
-            onClick={async () => {
-              setLoading(true);
-              let profilePicUrl: string | undefined;
-              if (profilePic) {
-                profilePicUrl = (await uploadImageToCloudinary(profilePic)).data
-                  .secure_url;
-              }
-              await editProfile({
-                profilePicUrl,
-                bio: bio !== "" ? bio : undefined,
-                username: username !== "" ? username : undefined,
-                name: name !== "" ? name : undefined,
-              });
-              setLoading(false);
-              setUser(
-                (prev) =>
-                  prev && {
-                    ...prev,
-                    profilePicUrl: profilePicUrl
-                      ? profilePicUrl
-                      : prev?.profilePicUrl,
-                    bio: bio ? bio : prev?.bio,
-                    username: username ? username : prev?.username,
-                    name: name ? name : prev?.name,
-                  }
-              );
-              setOpen(false);
-            }}
-          >
+          <Button disabled={loading} onClick={handleSave}>
             {loading ? "Saving Changes..." : "Save Changes"}
           </Button>
         </DialogFooter>

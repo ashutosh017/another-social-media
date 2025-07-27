@@ -12,7 +12,7 @@ export const FollowButton = ({
 }: {
   toUserId: string;
   toUserIsPublic: boolean;
-  status: string;
+  status: "Following" | "Requested" | "Follow";
 }) => {
   const [followStatus, setFollowStatus] = useState(status);
   return (
@@ -30,7 +30,7 @@ export const FollowButton = ({
 
         sendUnsendFollowRequest(toUserId);
       }}
-      variant={followStatus === "Following" ? "outline" : "default"}
+      variant={followStatus === "Following" ? "secondary" : "default"}
       size="sm"
       className="rounded-lg"
     >

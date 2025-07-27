@@ -1,31 +1,39 @@
+"use client";
+
 import { getMe } from "@/app/actions/auth.actions";
+import { fetchConversations } from "@/app/actions/messages.actions";
+import { ConversationsType } from "@/app/actions/types";
+import { MeContext } from "@/components/me-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { backend_url } from "@/lib/config";
-import axios from "axios";
+import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { ArrowLeft, Edit, Search } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useContext, useEffect, useState } from "react";
+import Pusher from 'pusher-js'
+import { useChatSubscription } from "@/hooks/useChatSubscription";
 
-export default async function MessagesPage({
-  params,
-}: {
-  params: Promise<{
-    username: string;
-} >;
-}) {
-  const username = (await params).username;
-  const me = await getMe();
-  const myUsername = me?.username;
-  if (myUsername !== username) notFound();
-  console.log("my username: ", myUsername);
-  console.log("username: ", username);
+export default function MessagesPage() {
+  const [conversations, setCovnersations] = useState<ConversationsType>();
+  const params = useParams();
+  const username = params.username;
+  const me = useContext(MeContext);
+  useEffect(() => {
+    async function callFetchConversations() {
+      const convs = await fetchConversations();
+      if (convs) {
+        setCovnersations(convs);
+      }
+    }
+    callFetchConversations();
+  }, []);
 
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="/feed" className="mr-2">
+        <Link href="./" className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-semibold flex-1">username</h1>
@@ -44,29 +52,31 @@ export default async function MessagesPage({
 
       {/* Messages list */}
       <div className="divide-y">
-        {Array.from({ length: 10 }).map((_, i) => (
+        {conversations?.map((_, i) => (
           <Link
-            href={`/${username}/messages/${i + 1}`}
+            href={`/${username}/messages/${_.participants[0].user.username}`}
             key={i}
             className="flex items-center p-4 hover:bg-muted/50"
           >
             <Avatar className="h-12 w-12 mr-3">
-              <AvatarImage src={``} alt={`User ${i + 1}`} />
-              <AvatarFallback>{`U${i + 1}`}</AvatarFallback>
+              <AvatarImage
+                src={_.participants[0].user.profilePicUrl ?? "/user.png"}
+                alt={_.participants[0].user.username}
+              />
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-baseline">
-                <p className="font-medium truncate">user{i + 1}</p>
+                <p className="font-medium truncate">
+                  {_.participants[0].user.username}
+                </p>
                 <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                  {i === 0 ? "Just now" : i === 1 ? "5m ago" : `${i}h ago`}
+                  {formatDistanceToNowStrict(_.messages[0].dateCreated, {
+                    addSuffix: true,
+                  })}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground truncate">
-                {i % 3 === 0
-                  ? "Hey, how are you doing?"
-                  : i % 3 === 1
-                  ? "Check out this new post!"
-                  : "Liked your photo 👍"}
+                {_.messages[0].content}
               </p>
             </div>
           </Link>

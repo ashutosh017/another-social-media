@@ -114,6 +114,7 @@ export async function toggleSavePost(postId: string) {
     if (!me) {
       return;
     }
+    console.log("save post  called");
     const isSaved = await prisma.savedPost.findFirst({
       where: {
         postId,

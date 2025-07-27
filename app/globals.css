@@ -124,5 +124,5 @@
 }
 
 .follow-btn-style{
-  @apply w-full py-0 mt-2 
+  @apply py-0  
 }

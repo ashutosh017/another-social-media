@@ -1,21 +1,23 @@
 "use client";
 
 import { fetchFollowing } from "@/app/actions/follow.actions";
+import { FollowingType } from "@/app/actions/types";
 import { FollowButton } from "@/components/follow-btn";
+import { MeContext } from "@/components/me-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { followingTyep } from "@/types/follow.types";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, MessageCircle, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useContext } from "react";
 
 export default function FollowingPage() {
   const { username } = useParams<{ username: string }>();
-  const [following, setFollowing] = useState<followingTyep>();
+  const [following, setFollowing] = useState<FollowingType>();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const me = useContext(MeContext);
 
   useEffect(() => {
     async function fetchFollowingCaller() {
@@ -112,11 +114,18 @@ export default function FollowingPage() {
                       </p>
                     </div>
                   </div>
-                  <FollowButton
-                    status="Following"
-                    toUserId={user.id}
-                    toUserIsPublic={user.public}
-                  />
+                  {user.username !== me?.username && (
+                    <div className="flex items-center justify-center gap-4">
+                      <FollowButton
+                        status="Following"
+                        toUserId={user.id}
+                        toUserIsPublic={user.public}
+                      />
+                      <Button variant={"default"} size={"sm"} className="">
+                        <MessageCircle className="w-5 h-5  " />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </>

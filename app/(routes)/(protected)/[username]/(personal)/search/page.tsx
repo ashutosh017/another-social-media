@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X, Hash, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { searchUsers } from "@/app/actions/users.actions";
+import { fetchSearchFeed, searchUsers } from "@/app/actions/search.actions";
+import { SearchedUsersType, SearchFeedType } from "@/app/actions/types";
+import { FollowButton } from "@/components/follow-btn";
+import { MeContext } from "@/components/me-context";
 
 const mockHashtags = [
   { tag: "photography", posts: "125M" },
@@ -21,33 +24,31 @@ const mockHashtags = [
   { tag: "fashion", posts: "201M" },
 ];
 
-type mockUsers = {
-  id: string;
-  name: string;
-  username: string;
-  isVerified: boolean;
-  profilePicUrl: string | null;
-  DOB: Date | null;
-  followers: {
-    id: string;
-  }[];
-}[];
+// type mockUsers = {
+//   id: string;
+//   name: string;
+//   username: string;
+//   isVerified: boolean;
+//   profilePicUrl: string | null;
+//   DOB: Date | null;
+//   followers: {
+//     id: string;
+//   }[];
+// }[];
 
-const mockPosts = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  image: `https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24`,
-  likes: Math.floor(Math.random() * 1000) + 100,
-}));
+// const mockPosts = Array.from({ length: 20 }, (_, i) => ({
+//   id: i + 1,
+//   image: `https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24`,
+//   likes: Math.floor(Math.random() * 1000) + 100,
+// }));
 
 export default function SearchPage() {
+  const me = useContext(MeContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState({
-    users: [] as unknown as mockUsers,
-    hashtags: [] as typeof mockHashtags,
-    posts: [] as typeof mockPosts,
-  });
+  const [searchFeed, setSearchFeed] = useState<SearchFeedType>();
+  const [searchResults, setSearchResults] = useState<SearchedUsersType>();
   const [isSearching, setIsSearching] = useState(false);
 
   // Load recent searches from localStorage on component mount
@@ -56,6 +57,13 @@ export default function SearchPage() {
     if (saved) {
       setRecentSearches(JSON.parse(saved));
     }
+    async function callFetchSearchFeed() {
+      const feed = await fetchSearchFeed();
+      if (feed) {
+        setSearchFeed(feed);
+      }
+    }
+    callFetchSearchFeed();
   }, []);
 
   // Debounce logic: runs whenever searchQuery changes
@@ -79,7 +87,7 @@ export default function SearchPage() {
   // Save recent searches to localStorage
   const saveRecentSearch = (query: string) => {
     if (query.trim() && !recentSearches.includes(query)) {
-      const updated = [query, ...recentSearches.slice(0, 9)]; // Keep only 10 recent searches
+      const updated = [query, ...recentSearches.slice(0, 3)]; // Keep only 10 recent searches
       setRecentSearches(updated);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
     }
@@ -102,7 +110,7 @@ export default function SearchPage() {
   const performSearch = async (query: string) => {
     console.log("perform search called");
     if (!query.trim()) {
-      setSearchResults({ users: [], hashtags: [], posts: [] });
+      setSearchResults([]);
       setIsSearching(false);
       return;
     }
@@ -111,21 +119,17 @@ export default function SearchPage() {
     const lowerQuery = query.toLowerCase();
 
     // Search users
-    const users = (await searchUsers(query)) as unknown as mockUsers;
+    const users = await searchUsers(query);
 
     // Search hashtags
-    const filteredHashtags = mockHashtags.filter((hashtag) =>
-      hashtag.tag.toLowerCase().includes(lowerQuery)
-    );
+    // const filteredHashtags = mockHashtags.filter((hashtag) =>
+    //   hashtag.tag.toLowerCase().includes(lowerQuery)
+    // );
 
     // For posts, we'll show all posts if there's a search query (in a real app, this would be more sophisticated)
-    const filteredPosts = query.trim() ? mockPosts : [];
+    // const filteredPosts = query.trim() ? mockPosts : [];
 
-    setSearchResults({
-      users: users,
-      hashtags: [],
-      posts: filteredPosts,
-    });
+    setSearchResults(users);
 
     // Save to recent searches
     saveRecentSearch(query);
@@ -144,7 +148,7 @@ export default function SearchPage() {
   // Clear search
   const clearSearch = () => {
     setSearchQuery("");
-    setSearchResults({ users: [], hashtags: [], posts: [] });
+    setSearchResults([]);
     setIsSearching(false);
   };
 
@@ -175,7 +179,7 @@ export default function SearchPage() {
       {!isSearching && !searchQuery ? (
         <>
           {/* Categories */}
-          {/* <div className="px-4 py-3 border-b">
+          <div className="px-4 py-3 border-b">
             <div className="flex gap-2 overflow-x-auto pb-2">
               {[
                 "For you",
@@ -197,7 +201,7 @@ export default function SearchPage() {
                 </Button>
               ))}
             </div>
-          </div> */}
+          </div>
 
           {/* Recent Searches */}
           {recentSearches.length > 0 && (
@@ -243,29 +247,30 @@ export default function SearchPage() {
 
           {/* Explore Grid */}
           <div className="grid grid-cols-3 gap-0.5">
-            {mockPosts.slice(0, 21).map((post) => (
-              <Link
-                href={`/post/${post.id}`}
-                key={post.id}
-                className="aspect-square relative"
-              >
-                <Image
-                  src={post.image || "/placeholder.svg"}
-                  alt={`Explore post ${post.id}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover hover:opacity-90 transition-opacity"
-                />
-              </Link>
-            ))}
+            {searchFeed &&
+              searchFeed
+                .flatMap((sf) => sf.posts)
+                .flatMap((post) => (
+                  <Link
+                    href={`/posts/${post.id}`}
+                    key={post.id}
+                    className="aspect-square relative"
+                  >
+                    <Image
+                      src={post.url}
+                      alt={`Explore post ${post.id}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover hover:opacity-90 transition-opacity"
+                    />
+                  </Link>
+                ))}
           </div>
         </>
       ) : (
         /* Search Results */
         <div className="p-4">
-          {searchResults.users.length === 0 &&
-          searchResults.hashtags.length === 0 &&
-          searchResults.posts.length === 0 ? (
+          {searchResults?.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 No results found for "{searchQuery}"
@@ -282,11 +287,11 @@ export default function SearchPage() {
 
               <TabsContent value="top" className="mt-4 space-y-4">
                 {/* Top Users */}
-                {searchResults.users.length > 0 && (
+                {searchResults && searchResults?.length > 0 && (
                   <div>
                     <h3 className="font-semibold mb-3">Accounts</h3>
                     <div className="space-y-3">
-                      {searchResults.users.slice(0, 3).map((user) => (
+                      {searchResults.map((user) => (
                         <Link
                           key={user.id}
                           href={`/${user.username}`}
@@ -294,7 +299,7 @@ export default function SearchPage() {
                         >
                           <Avatar className="h-12 w-12">
                             <AvatarImage
-                              src={`https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24`}
+                              src={user.profilePicUrl || "/user.png"}
                               alt={user.username}
                             />
                             <AvatarFallback>
@@ -311,7 +316,7 @@ export default function SearchPage() {
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground">
-                              {user.name} • {user.followers.length} followers
+                              {user.name} • {user.following.length} followers
                             </p>
                           </div>
                         </Link>
@@ -321,7 +326,7 @@ export default function SearchPage() {
                 )}
 
                 {/* Top Hashtags */}
-                {searchResults.hashtags.length > 0 && (
+                {/* {searchResults?.length > 0 && (
                   <div>
                     <h3 className="font-semibold mb-3">Hashtags</h3>
                     <div className="space-y-3">
@@ -344,12 +349,12 @@ export default function SearchPage() {
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
               </TabsContent>
 
               <TabsContent value="accounts" className="mt-4">
                 <div className="space-y-3">
-                  {searchResults.users.map((user) => (
+                  {searchResults?.map((user) => (
                     <Link
                       key={user.id}
                       href={`/profile/${user.username}`}
@@ -358,7 +363,7 @@ export default function SearchPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={`https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24`}
+                            src={user.profilePicUrl || "/user.png"}
                             alt={user.username}
                           />
                           <AvatarFallback>
@@ -375,21 +380,31 @@ export default function SearchPage() {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {user.name} • {user.followers.length} followers
+                            {user.name} • {user.following.length} followers
                           </p>
                         </div>
                       </div>
-                      <Button size="sm" variant="outline">
-                        Follow
-                      </Button>
+                      {user.id !== me?.id && (
+                        <FollowButton
+                          status={
+                            user.following.some((f) => f.followerId === me?.id)
+                              ? "Following"
+                              : user.receivedFollowRequests.length > 0
+                              ? "Requested"
+                              : "Follow"
+                          }
+                          toUserId={user.id}
+                          toUserIsPublic={user.public}
+                        />
+                      )}
                     </Link>
                   ))}
                 </div>
               </TabsContent>
 
-              <TabsContent value="hashtags" className="mt-4">
+              {/* <TabsContent value="hashtags" className="mt-4">
                 <div className="space-y-3">
-                  {searchResults.hashtags.map((hashtag) => (
+                  {searchResults?.map((hashtag) => (
                     <Link
                       key={hashtag.tag}
                       href={`/search?q=%23${hashtag.tag}`}
@@ -407,28 +422,30 @@ export default function SearchPage() {
                     </Link>
                   ))}
                 </div>
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="posts" className="mt-4">
                 <div className="grid grid-cols-3 gap-0.5">
-                  {searchResults.posts.map((post) => (
-                    <Link
-                      href={`/post/${post.id}`}
-                      key={post.id}
-                      className="aspect-square relative"
-                    >
-                      <Image
-                        src={
-                          post.image ||
-                          "https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24"
-                        }
-                        alt={`Post ${post.id}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover hover:opacity-90 transition-opacity"
-                      />
-                    </Link>
-                  ))}
+                  {searchResults
+                    ?.flatMap((sr) => sr.posts)
+                    .map((post) => (
+                      <Link
+                        href={`/post/${post.id}`}
+                        key={post.id}
+                        className="aspect-square relative"
+                      >
+                        <Image
+                          src={
+                            post.url ||
+                            "https://media.newyorker.com/photos/665f65409ad64d9e7a494208/4:3/w_1003,h_752,c_limit/Chayka-screenshot-06-05-24"
+                          }
+                          alt={`Post ${post.id}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover hover:opacity-90 transition-opacity"
+                        />
+                      </Link>
+                    ))}
                 </div>
               </TabsContent>
             </Tabs>

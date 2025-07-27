@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, User, MessageSquare, Plus } from "lucide-react";
+import { Home, Search, User, MessageSquare, Plus, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { User as PrismaUser } from "@/app/generated/prisma";
 import { useContext } from "react";
@@ -60,7 +60,7 @@ export default function BottomBar() {
               : "text-muted-foreground"
           }`}
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageCircle className="h-6 w-6" />
           <span className="text-xs mt-1">Messages</span>
         </Link>
         <Link

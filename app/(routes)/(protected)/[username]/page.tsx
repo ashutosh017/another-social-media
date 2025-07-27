@@ -1,7 +1,8 @@
 "use client";
 
 import { sendUnsendFollowRequest } from "@/app/actions/follow.actions";
-import { fetchUsertDetails } from "@/app/actions/users.actions";
+import { UserType } from "@/app/actions/types";
+import { fetchUsertDetails } from "@/app/actions/profile.actions";
 import { User as PrismaUser } from "@/app/generated/prisma";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { MeContext } from "@/components/me-context";
@@ -11,8 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { UserType } from "@/types/user.types";
-import { Bookmark, Grid, Lock, Settings } from "lucide-react";
+import { Bookmark, Globe, Grid, Lock, Settings, SquareUser, Tag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -76,7 +76,7 @@ export default function page() {
       }
       const currentUser = await fetchUsertDetails(username);
       if (!currentUser) {
-        router.replace("/signin");
+        router.replace(`${me?.username}`);
       }
       const doIFollowCurrentUser = currentUser?.following.some(
         (following) => following.followerId === me?.id
@@ -108,8 +108,13 @@ export default function page() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <h1 className="text-xl font-semibold flex-1 text-center">
+        <h1 className="text-xl font-semibold flex-1 flex items-center    gap-2">
           {user?.username ?? "username"}
+          {user?.public ? (
+            <Globe className="w-4 h-4 mb-0.5" />
+          ) : (
+            <Lock className="w-4 h-4 mb-0.5" />
+          )}
         </h1>
         <div className="flex gap-2 justify-end items-center">
           <ModeToggle />
@@ -159,16 +164,25 @@ export default function page() {
               </Button>
             </div>
           ) : (
-            <Button
-              onClick={handleFollow}
-              className={cn(
-                "follow-btn-style",
-                followStatus === "Follow" &&
-                  "bg-blue-700 hover:bg-blue-800 text-white"
-              )}
-            >
-              {followStatus ?? "Follow"}
-            </Button>
+            <div className="flex mt-4 items-center justify-between max-w-sm gap-4">
+              <Button
+                onClick={handleFollow}
+                className={cn(
+                  "follow-btn-style flex-1",
+                  followStatus === "Follow" &&
+                    "bg-blue-700 hover:bg-blue-800 text-white"
+                )}
+              >
+                {followStatus ?? "Follow"}
+              </Button>
+              <Button
+                onClick={() => {
+                  router.replace(me.username + "/messages/" + user?.username);
+                }}
+              >
+                Message
+              </Button>
+            </div>
           )}
 
           {/* Story Highlights */}
@@ -194,32 +208,76 @@ export default function page() {
         <div></div>
       </div>
 
-      {user?.public ? (
+      {user?.public || user?.id === me.id ? (
         <Tabs defaultValue="posts" className="">
-          <TabsList className="w-full grid grid-cols-1 bg-transparent  ">
-            <TabsTrigger value="posts" className="py-3">
+       <TabsList className="w-full grid grid-cols-2 bg-transparent mb-4">
+            <TabsTrigger value="posts" className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white">
               <Grid className="h-5 w-5" />
             </TabsTrigger>
+            <TabsTrigger value="tagged" className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white">
+              <SquareUser className="h-5 w-5" />
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="posts" className="mt-2 mx-1  ">
-            <div className="grid grid-cols-3 gap-0.5">
-              {user?.posts.map((post, i) => (
-                <Link
-                  href={`/posts/${post.id}`}
-                  key={i}
-                  className="aspect-square relative"
+
+          <TabsContent value="posts" className="mt-2 mx-1">
+            {user.posts.length > 0 ? (
+              <div className="grid grid-cols-3 gap-0.5">
+                {user?.posts.map((post, i) => (
+                  <Link href={`/posts/${post.id}`} key={i} className="aspect-square relative">
+                    <Image
+                      src={post.url || "/placeholder.svg"}
+                      alt={`Post ${i + 1}`}
+                      fill
+                      priority={true}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
+                <svg
+                  className="w-16 h-16 mb-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
                 >
-                  <Image
-                    src={post.url}
-                    alt={`Post ${i + 1}`}
-                    fill
-                    priority={true}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 6.75v10.5a2.25 2.25 0 002.25 2.25h10.5A2.25 2.25 0 0019.5 17.25V6.75M4.5 6.75A2.25 2.25 0 016.75 4.5h10.5a2.25 2.25 0 012.25 2.25M4.5 6.75h15M8.25 10.5h7.5M8.25 13.5h7.5"
                   />
-                </Link>
-              ))}
-            </div>
+                </svg>
+                <h2 className="text-lg font-semibold">No Posts Yet</h2>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tagged" className="mt-2 mx-1">
+            {user && user.tagged?.length > 0 ? (
+              <div className="grid grid-cols-3 gap-0.5">
+                {user.tagged?.map((post, i) => (
+                  <Link href={`/posts/${post.id}`} key={i} className="aspect-square relative">
+                    <Image
+                      src={post.url || "/placeholder.svg"}
+                      alt={`Tagged post ${i + 1}`}
+                      fill
+                      priority={true}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
+                <SquareUser className="w-16 h-16 mb-4 text-gray-400" />
+                <h2 className="text-lg font-semibold">No Tagged Posts</h2>
+                <p className="text-sm text-muted-foreground mt-2">Posts {user.id===me.id?"you're":"this user"} tagged in will appear here.</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       ) : (
@@ -227,12 +285,8 @@ export default function page() {
           <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
             <Lock className="h-12 w-12 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">
-            This Account is Private
-          </h3>
-          <p className="text-muted-foreground mb-6 max-w-sm">
-            Follow this account to see their photos and videos.
-          </p>
+          <h3 className="text-xl font-semibold mb-2">This Account is Private</h3>
+          <p className="text-muted-foreground mb-6 max-w-sm">Follow this account to see their photos and videos.</p>
         </div>
       )}
 

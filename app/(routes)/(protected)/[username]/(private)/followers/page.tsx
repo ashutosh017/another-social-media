@@ -1,14 +1,14 @@
 "use client";
 
 import { fetchFollowers, removeFollower } from "@/app/actions/follow.actions";
+import { FollowersType } from "@/app/actions/types";
 import { FollowButton } from "@/components/follow-btn";
 import { MeContext } from "@/components/me-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { followersType } from "@/types/follow.types";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, MessageCircle, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useState, useMemo } from "react";
@@ -16,7 +16,7 @@ import { useContext, useEffect, useState, useMemo } from "react";
 export default function FollowersPage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
-  const [followers, setFollowers] = useState<followersType>();
+  const [followers, setFollowers] = useState<FollowersType>();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const me = useContext(MeContext);
@@ -124,25 +124,45 @@ export default function FollowersPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex justify-end items-center space-x-4">
-                  <FollowButton
-                    status={
-                      follower.following.length > 0 ? "Following" : "Follow"
-                    }
-                    toUserId={follower.id}
-                    toUserIsPublic={follower.public}
-                  />
-                  <X
-                    onClick={() => {
-                      setFollowerToRemove({
-                        id: follower.id,
-                        username: follower.username,
-                        profilePicUrl: follower.profilePicUrl ?? "",
-                        name: follower.name,
-                      });
-                    }}
-                  />
-                </div>
+                {follower.username !== me?.username && (
+                  <div className="flex justify-end items-center space-x-4">
+                    <FollowButton
+                      status={
+                        follower.following.length > 0
+                          ? "Following"
+                          : follower.receivedFollowRequests.length > 0
+                          ? "Requested"
+                          : "Follow"
+                      }
+                      toUserId={follower.id}
+                      toUserIsPublic={follower.public}
+                    />
+                    <Button
+                      onClick={() =>
+                        router.replace(
+                          `${me?.username}/messages/${follower.username}`
+                        )
+                      }
+                      variant={"default"}
+                      size={"sm"}
+                      className=""
+                    >
+                      <MessageCircle className="w-4 h-4  " />
+                    </Button>
+                    {username === me?.username && (
+                      <X
+                        onClick={() => {
+                          setFollowerToRemove({
+                            id: follower.id,
+                            username: follower.username,
+                            profilePicUrl: follower.profilePicUrl ?? "",
+                            name: follower.name,
+                          });
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             ))
           ) : searchQuery ? (

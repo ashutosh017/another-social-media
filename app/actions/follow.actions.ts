@@ -72,6 +72,16 @@ export const sendUnsendFollowRequest = async (toUserId: string) => {
     createFollowRequest(me.id, toUserId);
     return;
   }
+
+  const followRequestExist = await prisma.followRequest.findFirst({
+    where: {
+      receiverId: toUserId,
+      senderId: me.id,
+    },
+  });
+  if (followRequestExist) {
+    deleteFollowRequest(me.id, toUserId);
+  }
   follow(me.id, toUserId);
 };
 
@@ -96,6 +106,10 @@ export const acceptRejectFollowRequest = async (
 
 export const fetchFollowers = async (username: string) => {
   try {
+    const me = await getMe();
+    if (!me) {
+      return;
+    }
     const followers = await prisma.follow.findMany({
       where: {
         following: {
@@ -113,7 +127,7 @@ export const fetchFollowers = async (username: string) => {
             receivedFollowRequests: {
               where: {
                 sender: {
-                  username,
+                  username: me.username,
                 },
               },
             },

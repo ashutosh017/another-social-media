@@ -9,6 +9,7 @@ import {
   Bookmark,
   Heart,
   MessageCircle,
+  MessageSquare,
   MoreHorizontal,
   Send,
   X,
@@ -27,10 +28,10 @@ import {
   toggleCommentLike,
   toggleReplyLike,
 } from "@/app/actions/comments.actions";
-import { PostType } from "@/types/post.types";
 import { cn } from "@/lib/utils";
 import { CommentBox } from "@/components/commnet-box";
 import { LikesModal } from "@/components/likes-modal";
+import { PostType } from "@/app/actions/types";
 
 export default function PostPage() {
   console.log("render");
@@ -67,7 +68,15 @@ export default function PostPage() {
   const commentRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const commentScrollRef = useRef<HTMLDivElement | null>(null);
+  const commentSectionRef = useRef<HTMLDivElement | null>(null);
+  const [maxed, setMaxed] = useState(false);
+  commentRef.current?.focus();
 
+  useEffect(() => {
+    if (!commentSectionRef.current) return;
+    const height = commentSectionRef.current.scrollHeight;
+    setMaxed(height > 384); // 24rem
+  }, [post?.comments]);
   useEffect(() => {
     async function fetchPostWithId() {
       const p = await fetchPost(postId);
@@ -282,9 +291,9 @@ export default function PostPage() {
             )} */}
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        {/* <Button variant="ghost" size="icon" className="h-8 w-8">
           <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </header>
 
       <div className="flex flex-col ">
@@ -372,166 +381,176 @@ export default function PostPage() {
 
         {/* Comments Section */}
         <div className="flex-1">
-          <div className="p-4 border-b">
+          <ScrollArea className={cn("p-4 border-b", maxed ? "h-96" : "h-fit")}>
             <h3 className="font-semibold text-sm mb-3">Comments</h3>
-            <ScrollArea className="space-y-4 h-96">
-              {post?.comments.map((comment, index) => (
-                <div id={comment.id} key={index} className="mb-4 pr-2 ">
-                  <div className="flex gap-3">
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage
-                        src={comment.user.profilePicUrl || "/user.png"}
-                        alt={comment.user.username}
-                      />
-                      <AvatarFallback>
-                        {comment.user.username.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm">
-                            <Link
-                              href={`/profile/${comment.user.username}`}
-                              className="font-semibold"
-                            >
-                              {comment.user.username}
-                            </Link>{" "}
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(
-                                new Date(comment.dateCreated),
-                                {
-                                  addSuffix: true,
-                                }
-                              )}
-                            </span>
-                          </p>
-                          <p className="text-sm mt-1">{comment.text}</p>
-                          <div className="flex items-center gap-4 mt-1">
-                            <span className="text-xs text-muted-foreground">
-                              {localCommentLikes[comment.id] ??
-                                comment.likes.length}{" "}
-                              likes
-                            </span>
-                            <button
-                              onClick={() => {
-                                setParentCommentId(comment.id);
-                                setReplyTo(comment.user.username);
-                                setShowReplyPopup(true);
-                                if (bottomRef.current) {
-                                  bottomRef.current.scrollIntoView({
-                                    block: "nearest",
-                                    behavior: "smooth",
-                                  });
-                                }
-                              }}
-                              className="text-xs text-muted-foreground font-semibold"
-                            >
-                              Reply
-                            </button>
+            <div ref={commentSectionRef} className={cn("space-y-4  ")}>
+              {post && post?.comments.length > 0 ? (
+                post?.comments.map((comment, index) => (
+                  <div id={comment.id} key={index} className="mb-4 pr-2 ">
+                    <div className="flex gap-3">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage
+                          src={comment.user.profilePicUrl || "/user.png"}
+                          alt={comment.user.username}
+                        />
+                        <AvatarFallback>
+                          {comment.user.username.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm">
+                              <Link
+                                href={`/profile/${comment.user.username}`}
+                                className="font-semibold"
+                              >
+                                {comment.user.username}
+                              </Link>{" "}
+                              <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(
+                                  new Date(comment.dateCreated),
+                                  {
+                                    addSuffix: true,
+                                  }
+                                )}
+                              </span>
+                            </p>
+                            <p className="text-sm mt-1">{comment.text}</p>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                {localCommentLikes[comment.id] ??
+                                  comment.likes.length}{" "}
+                                likes
+                              </span>
+                              <button
+                                onClick={() => {
+                                  setParentCommentId(comment.id);
+                                  setReplyTo(comment.user.username);
+                                  setShowReplyPopup(true);
+                                  if (bottomRef.current) {
+                                    bottomRef.current.scrollIntoView({
+                                      block: "nearest",
+                                      behavior: "smooth",
+                                    });
+                                  }
+                                }}
+                                className="text-xs text-muted-foreground font-semibold"
+                              >
+                                Reply
+                              </button>
+                            </div>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 ml-2"
+                            onClick={() => handleLike(comment.id)}
+                          >
+                            <Heart
+                              className={`h-3 w-3 ${
+                                likedComments[comment.id]
+                                  ? "fill-red-500 text-red-500"
+                                  : ""
+                              }`}
+                            />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 ml-2"
-                          onClick={() => handleLike(comment.id)}
-                        >
-                          <Heart
-                            className={`h-3 w-3 ${
-                              likedComments[comment.id]
-                                ? "fill-red-500 text-red-500"
-                                : ""
-                            }`}
-                          />
-                        </Button>
                       </div>
                     </div>
-                  </div>
-                  {comment.replies.length > 0 && (
-                    <button
-                      className="text-xs text-muted-foreground font-semibold ml-11 hover:text-foreground"
-                      onClick={() => toggleReplies(comment.id)}
-                    >
-                      {comment.replies.length > 0 &&
-                      showCommentReplies[comment.id]
-                        ? `Hide replies (${comment.replies.length})`
-                        : `View replies (${comment.replies.length})`}
-                    </button>
-                  )}
-                  {showCommentReplies[comment.id] &&
-                    comment.replies.map((reply) => (
-                      <div
-                        id={reply.id}
-                        key={reply.id}
-                        className="flex gap-3 ml-8"
+                    {comment.replies.length > 0 && (
+                      <button
+                        className="text-xs text-muted-foreground font-semibold ml-11 hover:text-foreground"
+                        onClick={() => toggleReplies(comment.id)}
                       >
-                        <Avatar className="h-6 w-6 flex-shrink-0">
-                          <AvatarImage
-                            src={reply.user?.profilePicUrl || "/user.png"}
-                            alt={reply.user.username}
-                          />
-                          <AvatarFallback>
-                            {reply.user.username.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/${reply.user.username}`}
-                              className="font-semibold text-sm"
-                            >
-                              {reply.user.username}
-                            </Link>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(reply.dateCreated, {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
-                          <p className="text-sm mt-1">{reply.text}</p>
-                          <div className="flex items-center gap-4 mt-1">
-                            <span className="text-xs text-muted-foreground">
-                              {localReplyLikes[comment.id][reply.id] ?? 0} likes
-                            </span>
-                            <button
-                              className="text-xs text-muted-foreground font-semibold hover:text-foreground"
-                              onClick={() => {
-                                setParentCommentId(comment.id);
-                                setReplyTo(reply.user.username);
-                                setShowReplyPopup(true);
-                                if (bottomRef.current) {
-                                  bottomRef.current.scrollIntoView({
-                                    behavior: "smooth",
-                                  });
-                                }
-                              }}
-                            >
-                              Reply
-                            </button>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 ml-2 flex-shrink-0"
-                          onClick={() => handleLike(comment.id, reply.id)}
+                        {comment.replies.length > 0 &&
+                        showCommentReplies[comment.id]
+                          ? `Hide replies (${comment.replies.length})`
+                          : `View replies (${comment.replies.length})`}
+                      </button>
+                    )}
+                    {showCommentReplies[comment.id] &&
+                      comment.replies.map((reply) => (
+                        <div
+                          id={reply.id}
+                          key={reply.id}
+                          className="flex gap-3 ml-8"
                         >
-                          <Heart
-                            className={cn(
-                              "h-2.5 w-2.5",
-                              likedReplies[comment.id][reply.id] &&
-                                "fill-red-500 text-red-500"
-                            )}
-                          />
-                        </Button>
-                      </div>
-                    ))}
+                          <Avatar className="h-6 w-6 flex-shrink-0">
+                            <AvatarImage
+                              src={reply.user?.profilePicUrl || "/user.png"}
+                              alt={reply.user.username}
+                            />
+                            <AvatarFallback>
+                              {reply.user.username
+                                .substring(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/${reply.user.username}`}
+                                className="font-semibold text-sm"
+                              >
+                                {reply.user.username}
+                              </Link>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(reply.dateCreated, {
+                                  addSuffix: true,
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm mt-1">{reply.text}</p>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                {localReplyLikes[comment.id][reply.id] ?? 0}{" "}
+                                likes
+                              </span>
+                              <button
+                                className="text-xs text-muted-foreground font-semibold hover:text-foreground"
+                                onClick={() => {
+                                  setParentCommentId(comment.id);
+                                  setReplyTo(reply.user.username);
+                                  setShowReplyPopup(true);
+                                  if (bottomRef.current) {
+                                    bottomRef.current.scrollIntoView({
+                                      behavior: "smooth",
+                                    });
+                                  }
+                                }}
+                              >
+                                Reply
+                              </button>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 ml-2 flex-shrink-0"
+                            onClick={() => handleLike(comment.id, reply.id)}
+                          >
+                            <Heart
+                              className={cn(
+                                "h-2.5 w-2.5",
+                                likedReplies[comment.id][reply.id] &&
+                                  "fill-red-500 text-red-500"
+                              )}
+                            />
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center text-muted-foreground text-sm py-6">
+                  <MessageCircle className="w-6 h-6 mb-2" />
+                  <span>No comments yet. Start the conversation!</span>
                 </div>
-              ))}
+              )}
               <div ref={commentScrollRef}></div>
-            </ScrollArea>
-          </div>
+            </div>
+          </ScrollArea>
         </div>
         <div className="relative w-full max-w-md">
           {/* Floating Reply Popup */}

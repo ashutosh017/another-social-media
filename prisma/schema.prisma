@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id                     String                    @unique @default(uuid())
+  id                     String                    @id @default(uuid())
   dateCreated            DateTime                  @default(now())
   name                   String
   username               String                    @unique
@@ -25,6 +25,7 @@ model User {
   public                 Boolean                   @default(true)
   isVerified             Boolean                   @default(false)
   DOB                    DateTime?
+  tagged                 Post[]                     @relation("Tagged")
   posts                  Post[]
   likedPosts             PostLike[]
   comments               Comment[]
@@ -36,68 +37,78 @@ model User {
   messages               Message[]
   sentFollowRequests     FollowRequest[]           @relation("sentFollowRequests")
   receivedFollowRequests FollowRequest[]           @relation("receivedFollowRequests")
-  CommentReply           CommentReply[]
+  commentReply           CommentReply[]
+  notificationActor      Notification[]            @relation("ActorNotifications")
+  notificationRecipient  Notification[]            @relation("RecipientNotifications")
+
+  @@index([username])
+  @@index([name])
 }
 
 model Post {
-  id           String         @unique @default(uuid())
-  dateCreated  DateTime       @default(now())
-  url          String
-  caption      String?
-  userId       String
-  user         User           @relation(fields: [userId], references: [id])
-  likes        PostLike[]
-  comments     Comment[]
-  savedBy      SavedPost[]
-  CommentReply CommentReply[]
+  id            String         @id @default(uuid())
+  dateCreated   DateTime       @default(now())
+  url           String
+  caption       String?
+  location      String?
+  userId        String
+  hideLikeCount Boolean        @default(false)
+  hideComments  Boolean        @default(false)
+  user          User           @relation(fields: [userId], references: [id])
+  tags          User[]         @relation("Tagged")
+  likes         PostLike[]
+  comments      Comment[]
+  savedBy       SavedPost[]
+  commentReply  CommentReply[]
+  notification  Notification[]
 }
 
 model PostLike {
-  id          String   @unique @default(uuid())
-  dateCreated DateTime @default(now())
-  post        Post     @relation(fields: [postId], references: [id])
-  postId      String
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
+  id           String         @id @default(uuid())
+  dateCreated  DateTime       @default(now())
+  post         Post           @relation(fields: [postId], references: [id])
+  postId       String
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String
+  notification Notification[]
 
   @@unique([postId, userId])
 }
 
 model Comment {
-  id          String         @unique @default(uuid())
-  dateCreated DateTime       @default(now())
-  text        String
-  user        User           @relation(fields: [userId], references: [id])
-  userId      String
-  likes       CommentLike[]
-  post        Post           @relation(fields: [postId], references: [id])
-  postId      String
-  replies     CommentReply[] @relation("CommentReplies")
-
-  // parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
-  // parentId    String?
+  id           String         @id @default(uuid())
+  dateCreated  DateTime       @default(now())
+  text         String
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String
+  likes        CommentLike[]
+  post         Post           @relation(fields: [postId], references: [id])
+  postId       String
+  replies      CommentReply[] @relation("CommentReplies")
+  notification Notification[]
 }
 
 model CommentReply {
-  id          String   @unique @default(uuid())
+  id          String   @id @default(uuid())
   dateCreated DateTime @default(now())
   text        String
   likes       String[] @default([])
 
-  parent   Comment @relation("CommentReplies", fields: [parentId], references: [id])
+  parent   Comment @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   parentId String
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  post   Post   @relation(fields: [postId], references: [id])
-  postId String
+  post         Post           @relation(fields: [postId], references: [id])
+  postId       String
+  notification Notification[]
 }
 
 model CommentLike {
-  id          String   @unique @default(uuid())
+  id          String   @id @default(uuid())
   dateCreated DateTime @default(now())
-  comment     Comment  @relation(fields: [commentId], references: [id])
+  comment     Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId   String
   user        User     @relation(fields: [userId], references: [id])
   userId      String
@@ -106,18 +117,19 @@ model CommentLike {
 }
 
 model Follow {
-  id          String   @unique @default(uuid())
-  dateCreated DateTime @default(now())
-  follower    User     @relation("followers", fields: [followerId], references: [id])
-  following   User     @relation("following", fields: [followingId], references: [id])
-  followerId  String
-  followingId String
+  id           String        @id @default(uuid())
+  dateCreated  DateTime      @default(now())
+  follower     User          @relation("followers", fields: [followerId], references: [id])
+  following    User          @relation("following", fields: [followingId], references: [id])
+  followerId   String
+  followingId  String
+  notification Notification?
 
   @@unique([followerId, followingId])
 }
 
 model SavedPost {
-  id          String   @unique @default(uuid())
+  id          String   @id @default(uuid())
   dateCreated DateTime @default(now())
   User        User     @relation(fields: [userId], references: [id])
   userId      String
@@ -128,40 +140,72 @@ model SavedPost {
 }
 
 model Conversation {
-  id           String                    @unique @default(uuid())
+  id           String                    @id @default(uuid())
   dateCreated  DateTime                  @default(now())
   messages     Message[]
   participants ConversationParticipant[]
 }
 
 model ConversationParticipant {
-  id             String       @unique @default(uuid())
+  id             String       @id @default(uuid())
   dateCreated    DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
 
   @@unique([conversationId, userId])
 }
 
 model Message {
-  id             String       @unique @default(uuid())
+  id             String       @id @default(uuid())
   dateCreated    DateTime     @default(now())
-  Conversation   Conversation @relation(fields: [conversationId], references: [id])
+  content        String
+  seen           Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
   sender         User         @relation(fields: [senderId], references: [id])
   senderId       String
 }
 
 model FollowRequest {
-  id          String              @id @default(uuid())
-  dateCreated DateTime            @default(now())
-  sender      User                @relation("sentFollowRequests", fields: [senderId], references: [id])
-  senderId    String
-  receiver    User                @relation("receivedFollowRequests", fields: [receiverId], references: [id])
-  receiverId  String
-
+  id           String         @id @default(uuid())
+  dateCreated  DateTime       @default(now())
+  sender       User           @relation("sentFollowRequests", fields: [senderId], references: [id])
+  senderId     String
+  receiver     User           @relation("receivedFollowRequests", fields: [receiverId], references: [id])
+  receiverId   String
+  notification Notification[]
 
   @@unique([senderId, receiverId])
+}
+
+model Notification {
+  id              String           @id @default(cuid())
+  dateCreated     DateTime         @default(now())
+  type            NotificationType
+  isRead          Boolean          @default(false)
+  postId          String?
+  post            Post?            @relation(fields: [postId], references: [id])
+  followId        String?          @unique
+  follow          Follow?          @relation(fields: [followId], references: [id])
+  followRequestId String?
+  followRequest   FollowRequest?   @relation(fields: [followRequestId], references: [id])
+  commentId       String?
+  comment         Comment?         @relation(fields: [commentId], references: [id])
+  likeId          String?
+  commentReplyId  String?
+  commentReply    CommentReply?    @relation(fields: [commentReplyId], references: [id])
+  like            PostLike?        @relation(fields: [likeId], references: [id])
+  actorId         String
+  actor           User             @relation("ActorNotifications", fields: [actorId], references: [id])
+  recipientId     String
+  recipient       User             @relation("RecipientNotifications", fields: [recipientId], references: [id])
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  MENTION
+  FOLLOW
 }
