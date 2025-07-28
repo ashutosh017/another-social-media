@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { getMe } from "./auth.actions";
+import { createNotification } from "./notifications.actions";
 
 const follow = async (followerId: string, followingId: string) => {
   await prisma.follow.create({
@@ -23,12 +24,13 @@ const unFollow = async (followerId: string, followingId: string) => {
 };
 
 const createFollowRequest = async (senderId: string, receiverId: string) => {
-  await prisma.followRequest.create({
+  const res =await prisma.followRequest.create({
     data: {
       senderId,
       receiverId,
     },
   });
+  return res.id
 };
 
 const deleteFollowRequest = async (senderId: string, receiverId: string) => {
@@ -56,33 +58,39 @@ export const sendUnsendFollowRequest = async (toUserId: string) => {
     return;
   }
 
-  const doIFollow = await prisma.follow.findFirst({
-    where: {
-      followerId: me.id,
-      followingId: toUserId,
-    },
-  });
-  if (doIFollow) {
-    unFollow(me.id, toUserId);
-    return;
-  }
-  const isToUserAccountPrivate = !toUser.public;
+  try {
+    const doIFollow = await prisma.follow.findFirst({
+      where: {
+        followerId: me.id,
+        followingId: toUserId,
+      },
+    });
+    if (doIFollow) {
+      unFollow(me.id, toUserId);
+      return;
+    }
+    const isToUserAccountPrivate = !toUser.public;
+    const followRequestExist = await prisma.followRequest.findFirst({
+      where: {
+        receiverId: toUserId,
+        senderId: me.id,
+      },
+    });
 
-  if (isToUserAccountPrivate) {
-    createFollowRequest(me.id, toUserId);
-    return;
-  }
+    if (followRequestExist) {
+      deleteFollowRequest(me.id, toUserId);
+      return;
+    }
+    if (isToUserAccountPrivate) {
+        const id = await createFollowRequest(me.id, toUserId);
+        createNotification(me.id, toUserId, "FOLLOW_REQUEST", {followRequestId:id})
+      return;
+    }
 
-  const followRequestExist = await prisma.followRequest.findFirst({
-    where: {
-      receiverId: toUserId,
-      senderId: me.id,
-    },
-  });
-  if (followRequestExist) {
-    deleteFollowRequest(me.id, toUserId);
+    follow(me.id, toUserId);
+  } catch (error) {
+    console.log("error in sendunsendfollowreq fn: ", error);
   }
-  follow(me.id, toUserId);
 };
 
 export const acceptRejectFollowRequest = async (

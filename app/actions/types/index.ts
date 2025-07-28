@@ -4,6 +4,7 @@ import {
   fetchConversationDetails,
   fetchConversations,
 } from "../messages.actions";
+import { fetchNotifications } from "../notifications.actions";
 import { fetchPost } from "../posts.actions";
 import { fetchUsertDetails } from "../profile.actions";
 import { fetchSearchFeed, searchUsers } from "../search.actions";
@@ -20,3 +21,4 @@ export type FeedType = Awaited<ReturnType<typeof getFeed>>;
 
 export type SearchedUsersType = Awaited<ReturnType<typeof searchUsers>>;
 export type SearchFeedType = Awaited<ReturnType<typeof fetchSearchFeed>>;
+export type NotificationsType = Awaited<ReturnType<typeof fetchNotifications>>;

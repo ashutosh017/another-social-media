@@ -25,7 +25,7 @@ model User {
   public                 Boolean                   @default(true)
   isVerified             Boolean                   @default(false)
   DOB                    DateTime?
-  tagged                 Post[]                     @relation("Tagged")
+  tagged                 Post[]                    @relation("Tagged")
   posts                  Post[]
   likedPosts             PostLike[]
   comments               Comment[]
@@ -89,17 +89,14 @@ model Comment {
 }
 
 model CommentReply {
-  id          String   @id @default(uuid())
-  dateCreated DateTime @default(now())
-  text        String
-  likes       String[] @default([])
-
-  parent   Comment @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  parentId String
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
+  id           String         @id @default(uuid())
+  dateCreated  DateTime       @default(now())
+  text         String
+  likes        String[]       @default([])
+  parent       Comment        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId     String
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String
   post         Post           @relation(fields: [postId], references: [id])
   postId       String
   notification Notification[]
@@ -117,13 +114,13 @@ model CommentLike {
 }
 
 model Follow {
-  id           String        @id @default(uuid())
-  dateCreated  DateTime      @default(now())
-  follower     User          @relation("followers", fields: [followerId], references: [id])
-  following    User          @relation("following", fields: [followingId], references: [id])
+  id           String         @id @default(uuid())
+  dateCreated  DateTime       @default(now())
+  follower     User           @relation("followers", fields: [followerId], references: [id])
+  following    User           @relation("following", fields: [followingId], references: [id])
   followerId   String
   followingId  String
-  notification Notification?
+  notification Notification[]
 
   @@unique([followerId, followingId])
 }
@@ -185,22 +182,23 @@ model Notification {
   dateCreated     DateTime         @default(now())
   type            NotificationType
   isRead          Boolean          @default(false)
+  actor           User             @relation("ActorNotifications", fields: [actorId], references: [id])
+  recipientId     String
+  recipient       User             @relation("RecipientNotifications", fields: [recipientId], references: [id])
+  actorId         String
+  
   postId          String?
   post            Post?            @relation(fields: [postId], references: [id])
-  followId        String?          @unique
+  followId        String?
   follow          Follow?          @relation(fields: [followId], references: [id])
   followRequestId String?
   followRequest   FollowRequest?   @relation(fields: [followRequestId], references: [id])
   commentId       String?
   comment         Comment?         @relation(fields: [commentId], references: [id])
   likeId          String?
+  like            PostLike?        @relation(fields: [likeId], references: [id])
   commentReplyId  String?
   commentReply    CommentReply?    @relation(fields: [commentReplyId], references: [id])
-  like            PostLike?        @relation(fields: [likeId], references: [id])
-  actorId         String
-  actor           User             @relation("ActorNotifications", fields: [actorId], references: [id])
-  recipientId     String
-  recipient       User             @relation("RecipientNotifications", fields: [recipientId], references: [id])
 }
 
 enum NotificationType {
@@ -208,4 +206,6 @@ enum NotificationType {
   COMMENT
   MENTION
   FOLLOW
+  FOLLOW_REQUEST
+  COMMENT_REPLY
 }

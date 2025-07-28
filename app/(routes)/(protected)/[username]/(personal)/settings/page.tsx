@@ -51,7 +51,7 @@ export default function SettingsPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href={`/feed`} className="mr-2">
+        <Link href={`./`} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-semibold flex-1">Settings</h1>
