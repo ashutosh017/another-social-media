@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../app/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -178,27 +179,27 @@ model FollowRequest {
 }
 
 model Notification {
-  id              String           @id @default(cuid())
-  dateCreated     DateTime         @default(now())
-  type            NotificationType
-  isRead          Boolean          @default(false)
-  actor           User             @relation("ActorNotifications", fields: [actorId], references: [id])
-  recipientId     String
-  recipient       User             @relation("RecipientNotifications", fields: [recipientId], references: [id])
-  actorId         String
-  
+  id          String           @id @default(cuid())
+  dateCreated DateTime         @default(now())
+  type        NotificationType
+  isRead      Boolean          @default(false)
+  actor       User             @relation("ActorNotifications", fields: [actorId], references: [id])
+  recipientId String
+  recipient   User             @relation("RecipientNotifications", fields: [recipientId], references: [id])
+  actorId     String
+
   postId          String?
-  post            Post?            @relation(fields: [postId], references: [id])
+  post            Post?          @relation(fields: [postId], references: [id])
   followId        String?
-  follow          Follow?          @relation(fields: [followId], references: [id])
+  follow          Follow?        @relation(fields: [followId], references: [id])
   followRequestId String?
-  followRequest   FollowRequest?   @relation(fields: [followRequestId], references: [id])
+  followRequest   FollowRequest? @relation(fields: [followRequestId], references: [id])
   commentId       String?
-  comment         Comment?         @relation(fields: [commentId], references: [id])
+  comment         Comment?       @relation(fields: [commentId], references: [id])
   likeId          String?
-  like            PostLike?        @relation(fields: [likeId], references: [id])
+  like            PostLike?      @relation(fields: [likeId], references: [id])
   commentReplyId  String?
-  commentReply    CommentReply?    @relation(fields: [commentReplyId], references: [id])
+  commentReply    CommentReply?  @relation(fields: [commentReplyId], references: [id])
 }
 
 enum NotificationType {
