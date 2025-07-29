@@ -12,6 +12,7 @@ import { fetchSearchFeed, searchUsers } from "@/app/actions/search.actions";
 import { SearchedUsersType, SearchFeedType } from "@/app/actions/types";
 import { FollowButton } from "@/components/follow-btn";
 import { MeContext } from "@/components/me-context";
+import { SearchSkeleton } from "./SearchSkeleton";
 
 const mockHashtags = [
   { tag: "photography", posts: "125M" },
@@ -50,9 +51,10 @@ export default function SearchPage() {
   const [searchFeed, setSearchFeed] = useState<SearchFeedType>();
   const [searchResults, setSearchResults] = useState<SearchedUsersType>();
   const [isSearching, setIsSearching] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   // Load recent searches from localStorage on component mount
   useEffect(() => {
+    setLoading(true);
     const saved = localStorage.getItem("recentSearches");
     if (saved) {
       setRecentSearches(JSON.parse(saved));
@@ -62,6 +64,7 @@ export default function SearchPage() {
       if (feed) {
         setSearchFeed(feed);
       }
+      setLoading(false);
     }
     callFetchSearchFeed();
   }, []);
@@ -151,7 +154,9 @@ export default function SearchPage() {
     setSearchResults([]);
     setIsSearching(false);
   };
-
+  // if(loading){
+  //   return <SearchSkeleton/>
+  // }
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10">
@@ -246,9 +251,9 @@ export default function SearchPage() {
           )}
 
           {/* Explore Grid */}
-          <div className="grid grid-cols-3 gap-0.5">
-            {searchFeed &&
-              searchFeed
+          {searchFeed ? (
+            <div className="grid grid-cols-3 gap-0.5">
+              {searchFeed
                 .flatMap((sf) => sf.posts)
                 .flatMap((post) => (
                   <Link
@@ -265,7 +270,10 @@ export default function SearchPage() {
                     />
                   </Link>
                 ))}
-          </div>
+            </div>
+          ) : (
+            <SearchSkeleton />
+          )}
         </>
       ) : (
         /* Search Results */

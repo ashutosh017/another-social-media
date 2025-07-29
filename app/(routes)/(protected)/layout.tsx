@@ -9,7 +9,6 @@ export default async function ProtectedRoutesLayout({
   children: React.ReactNode;
 }>) {
   const me = await getMe();
-  console.log("me in layout.tsx: ", me)
 
   return (
     <div className="max-w-md mx-auto ">

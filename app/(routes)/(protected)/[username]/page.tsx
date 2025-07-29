@@ -146,14 +146,26 @@ export default function page() {
               <div className="font-semibold">{user?.posts.length}</div>
               <div className="text-sm text-muted-foreground">Posts</div>
             </Link>
-            <Link href={`/${user?.username}/followers `} className="block">
+            <button
+              onClick={() => router.push(`/${user?.username}/followers `)}
+              disabled={
+                !user?.public && followStatus !== "Following" && user?.id !== me.id
+              }
+              className="block"
+            >
               <div className="font-semibold">{user?.following.length}</div>
               <div className="text-sm text-muted-foreground">Followers</div>
-            </Link>
-            <Link href={`/${user?.username}/following`} className="block">
+            </button>
+            <button
+              onClick={() => router.push(`/${user?.username}/following`)}
+              disabled={
+                !user?.public && followStatus !== "Following" && user?.id !== me.id
+              }
+              className="block"
+            >
               <div className="font-semibold">{user?.followers.length}</div>
               <div className="text-sm text-muted-foreground">Following</div>
-            </Link>
+            </button>
           </div>
         </div>
 

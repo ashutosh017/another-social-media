@@ -46,7 +46,7 @@ export default function BottomBar() {
           <Plus
             className={cn(
               "h-6 w-6 border-2 p-0.5 rounded-md",
-              pathname === `/add` ? "border-white" : "border-muted-foreground"
+              pathname.includes("/add") ? "border-white" : "border-muted-foreground"
             )}
           />
           <span className="text-xs mt-1">Add</span>

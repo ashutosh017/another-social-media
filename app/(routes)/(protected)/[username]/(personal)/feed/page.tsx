@@ -11,16 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Bookmark,
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Send,
-  MessageSquare,
-  BookmarkPlus,
-  Sparkles,
-} from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Send, Sparkles } from "lucide-react";
 import { cookies } from "next/headers";
 import { getMe } from "@/app/actions/auth.actions";
 import { useContext, useEffect, useState } from "react";
@@ -31,9 +22,11 @@ import { getFeed } from "@/app/actions/feed.actions";
 import { cn } from "@/lib/utils";
 import { toggleLikePost, toggleSavePost } from "@/app/actions/posts.actions";
 import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
+import { hasNewNotifications } from "@/app/actions/notifications.actions";
 
-export default function HomePage() {
+export default function FeedPage() {
   const randomId = crypto.randomUUID();
+  const [newNotifications, setNewNotifications] = useState(false);
   const router = useRouter();
   const me = useContext(MeContext);
   const username = useParams<{ username: string }>().username;
@@ -48,32 +41,41 @@ export default function HomePage() {
       }
       setFeed(res);
     }
+    async function checkNewNotifications() {
+      const check = await hasNewNotifications();
+      if (check) {
+        setNewNotifications(true);
+      }
+    }
     callGetFeed();
+    checkNewNotifications();
   }, []);
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Instagram</h1>
         <div className="flex  items-center">
-      {/* Notifications Button */}
-      <Link href="notifications">
-        <Button variant="ghost" size="sm" className="relative">
-          {/* Red Dot */}
+          {/* Notifications Button */}
+          <Link href="notifications">
+            <Button variant="ghost" size="sm" className="relative">
+              {/* Red Dot */}
 
-          {/* <div className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" /> */}
-          <Heart className="h-6 w-6" />
-          <span className="sr-only">Notifications</span>
-        </Button>
-      </Link>
+              {newNotifications && (
+                <div className="absolute top-1 right-1 w-1 h-1 bg-red-500 rounded-full" />
+              )}
+              <Heart className="h-6 w-6" />
+              <span className="sr-only">Notifications</span>
+            </Button>
+          </Link>
 
-      {/* Messages Button */}
-      <Link href="messages">
-        <Button variant="ghost" size="sm">
-          <MessageCircle className="h-6 w-6" />
-          <span className="sr-only">Messages</span>
-        </Button>
-      </Link>
-    </div>
+          {/* Messages Button */}
+          <Link href="messages">
+            <Button variant="ghost" size="sm">
+              <MessageCircle className="h-6 w-6" />
+              <span className="sr-only">Messages</span>
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* Stories */}
@@ -277,7 +279,36 @@ export default function HomePage() {
             </div>
           )
         ) : (
-          <div className="text-center py-4">Loading...</div>
+        <div className="space-y-8 animate-pulse px-4 py-6">
+  {Array.from({ length: 4 }).map((_, i) => (
+    <div key={i} className="space-y-4">
+      {/* Header: Avatar + Username */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-muted" />
+        <div className="h-4 w-24 bg-muted rounded" />
+      </div>
+
+      {/* Image placeholder */}
+      <div className="w-full h-[400px] bg-muted rounded-xl" />
+
+      {/* Actions row */}
+      <div className="flex gap-4">
+        <div className="w-6 h-6 bg-muted rounded" />
+        <div className="w-6 h-6 bg-muted rounded" />
+        <div className="w-6 h-6 bg-muted rounded" />
+      </div>
+
+      {/* Caption */}
+      <div className="space-y-2">
+        <div className="w-3/4 h-4 bg-muted rounded" />
+        <div className="w-1/2 h-4 bg-muted rounded" />
+      </div>
+
+      <hr className="border-muted/50" />
+    </div>
+  ))}
+</div>
+
         )}
       </div>
     </div>

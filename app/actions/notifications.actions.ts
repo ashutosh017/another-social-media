@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { getMe } from "./auth.actions";
-import { Notification } from "@/lib/generated/prisma"
+import { Notification } from "@/lib/generated/prisma";
 
 export async function fetchNotifications() {
   const me = await getMe();
@@ -117,7 +117,7 @@ export async function createNotification(
 }
 
 export async function markAsSeenNotification(id: string) {
-    console.log("marked notification called")
+  console.log("marked notification called");
   await prisma.notification.update({
     where: {
       id,
@@ -128,10 +128,27 @@ export async function markAsSeenNotification(id: string) {
   });
 }
 
-export async function deleteNotification(id:string){
-    await prisma.notification.delete({
-        where:{
-            id
-        }
-    })
+export async function deleteNotification(id: string) {
+  await prisma.notification.delete({
+    where: {
+      id,
+    },
+  });
 }
+
+export const hasNewNotifications = async () => {
+  const me = await getMe();
+  if (!me) return;
+  const notifications = await prisma.notification.findMany({
+    where: {
+      recipientId: me.id,
+    },
+    select: {
+      id: true,
+      isRead: true,
+    },
+  });
+  const newNotifications = notifications.some((n) => n.isRead === true);
+  console.log("new notifications: ", newNotifications)
+  return newNotifications;
+};

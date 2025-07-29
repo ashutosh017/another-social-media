@@ -72,7 +72,6 @@ export const getMe = async () => {
     };
   };
   const username = verify.payload.username;
-  console.log("username in geme fn: ", verify.payload);
   const user: User | null = await prisma.user.findFirst({
     where: {
       username,
@@ -80,7 +79,6 @@ export const getMe = async () => {
   });
   if (user) {
     const { password, ...safeUser } = user;
-    console.log("safe user in get me fn: ", safeUser);
     return safeUser;
   }
   return null;
