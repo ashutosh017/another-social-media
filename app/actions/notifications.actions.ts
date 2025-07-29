@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { getMe } from "./auth.actions";
-import { Notification } from "../generated/prisma";
+import { Notification } from "@/lib/generated/prisma"
 
 export async function fetchNotifications() {
   const me = await getMe();

@@ -13,7 +13,7 @@ import {
   markAsSeenNotification,
 } from "@/app/actions/notifications.actions";
 import { NotificationsType } from "@/app/actions/types";
-import { Notification, NotificationType } from "@/app/generated/prisma";
+import { Notification, NotificationType } from "@/lib/generated/prisma";
 import { acceptRejectFollowRequest } from "@/app/actions/follow.actions";
 import { MeContext } from "@/components/me-context";
 

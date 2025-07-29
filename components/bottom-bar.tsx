@@ -3,7 +3,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, User, MessageSquare, Plus, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { User as PrismaUser } from "@/app/generated/prisma";
 import { useContext } from "react";
 import { MeContext } from "./me-context";
 

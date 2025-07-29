@@ -3,7 +3,6 @@
 import { sendUnsendFollowRequest } from "@/app/actions/follow.actions";
 import { UserType } from "@/app/actions/types";
 import { fetchUsertDetails } from "@/app/actions/profile.actions";
-import { User as PrismaUser } from "@/app/generated/prisma";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { MeContext } from "@/components/me-context";
 import ProfileSkeleton from "@/components/profile-skeleton";
@@ -12,7 +11,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Bookmark, Globe, Grid, Lock, Settings, SquareUser, Tag } from "lucide-react";
+import {
+  Bookmark,
+  Globe,
+  Grid,
+  Lock,
+  Settings,
+  SquareUser,
+  Tag,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -210,20 +217,30 @@ export default function page() {
 
       {user?.public || user?.id === me.id ? (
         <Tabs defaultValue="posts" className="">
-       <TabsList className="w-full grid grid-cols-2 bg-transparent mb-4">
-            <TabsTrigger value="posts" className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white">
+          <TabsList className="w-full grid grid-cols-2 bg-transparent mb-4">
+            <TabsTrigger
+              value="posts"
+              className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white"
+            >
               <Grid className="h-5 w-5" />
             </TabsTrigger>
-            <TabsTrigger value="tagged" className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white">
+            <TabsTrigger
+              value="tagged"
+              className="py-3 border-b-2 border-transparent rounded-b-xs data-[state=active]:border-white"
+            >
               <SquareUser className="h-5 w-5" />
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="mt-2 mx-1">
-            {user.posts.length > 0 ? (
+            {user && user.posts.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
                 {user?.posts.map((post, i) => (
-                  <Link href={`/posts/${post.id}`} key={i} className="aspect-square relative">
+                  <Link
+                    href={`/posts/${post.id}`}
+                    key={i}
+                    className="aspect-square relative"
+                  >
                     <Image
                       src={post.url || "/placeholder.svg"}
                       alt={`Post ${i + 1}`}
@@ -259,7 +276,11 @@ export default function page() {
             {user && user.tagged?.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
                 {user.tagged?.map((post, i) => (
-                  <Link href={`/posts/${post.id}`} key={i} className="aspect-square relative">
+                  <Link
+                    href={`/posts/${post.id}`}
+                    key={i}
+                    className="aspect-square relative"
+                  >
                     <Image
                       src={post.url || "/placeholder.svg"}
                       alt={`Tagged post ${i + 1}`}
@@ -275,7 +296,10 @@ export default function page() {
               <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
                 <SquareUser className="w-16 h-16 mb-4 text-gray-400" />
                 <h2 className="text-lg font-semibold">No Tagged Posts</h2>
-                <p className="text-sm text-muted-foreground mt-2">Posts {user.id===me.id?"you're":"this user"} tagged in will appear here.</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Posts {user?.id === me.id ? "you're" : "this user"} tagged in
+                  will appear here.
+                </p>
               </div>
             )}
           </TabsContent>
@@ -285,8 +309,12 @@ export default function page() {
           <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
             <Lock className="h-12 w-12 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">This Account is Private</h3>
-          <p className="text-muted-foreground mb-6 max-w-sm">Follow this account to see their photos and videos.</p>
+          <h3 className="text-xl font-semibold mb-2">
+            This Account is Private
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-sm">
+            Follow this account to see their photos and videos.
+          </p>
         </div>
       )}
 
