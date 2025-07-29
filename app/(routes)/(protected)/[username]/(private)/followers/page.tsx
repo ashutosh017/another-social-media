@@ -71,9 +71,9 @@ export default function FollowersPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="./" className="mr-2">
+        <button onClick={()=>window.history.back()} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <h1 className="text-xl font-semibold flex-1">Followers</h1>
       </header>
 
@@ -108,7 +108,7 @@ export default function FollowersPage() {
                 <div
                   className="flex items-center flex-1 "
                   onClick={() => {
-                    router.replace(`/${follower.username}`);
+                    router.push(`/${follower.username}`);
                   }}
                 >
                   <Avatar className="h-12 w-12 mr-3">
@@ -139,7 +139,7 @@ export default function FollowersPage() {
                     />
                     <Button
                       onClick={() =>
-                        router.replace(
+                        router.push(
                           `${me?.username}/messages/${follower.username}`
                         )
                       }

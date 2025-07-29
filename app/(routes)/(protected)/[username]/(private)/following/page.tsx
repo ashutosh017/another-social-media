@@ -53,9 +53,9 @@ export default function FollowingPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="./" className="mr-2">
+        <button onClick={()=>window.history.back()} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <h1 className="text-xl font-semibold flex-1">Following</h1>
       </header>
 
@@ -97,7 +97,7 @@ export default function FollowingPage() {
                 >
                   <div
                     onClick={() => {
-                      router.replace(`/${user.username}`);
+                      router.push(`/${user.username}`);
                     }}
                     className="flex items-center flex-1"
                   >

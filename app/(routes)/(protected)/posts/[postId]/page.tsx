@@ -70,7 +70,6 @@ export default function PostPage() {
   const commentScrollRef = useRef<HTMLDivElement | null>(null);
   const commentSectionRef = useRef<HTMLDivElement | null>(null);
   const [maxed, setMaxed] = useState(false);
-  commentRef.current?.focus();
 
   useEffect(() => {
     if (!commentSectionRef.current) return;
@@ -130,7 +129,6 @@ export default function PostPage() {
   useEffect(() => {
     if (replyTo && commentRef?.current) {
       commentRef.current.value = `@${replyTo} `;
-      commentRef.current.focus();
     }
   });
 

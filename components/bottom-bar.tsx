@@ -14,9 +14,9 @@ export default function BottomBar() {
     <div className="fixed bottom-0 left-0 right-0 border-t bg-background max-w-md mx-auto">
       <div className="flex justify-around py-3">
         <Link
-          href={`/${me?.username}//feed`}
+          href={`/${me?.username}/feed`}
           className={`flex flex-col items-center ${
-            pathname === `/feed`
+            pathname.includes("/feed")
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -25,9 +25,9 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Home</span>
         </Link>
         <Link
-          href={`/${me?.username}//search`}
+          href={`/${me?.username}/search`}
           className={`flex flex-col items-center ${
-            pathname === `/search`
+            pathname.includes("/search")
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -36,9 +36,9 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Search</span>
         </Link>
         <Link
-          href={`/${me?.username}//add`}
+          href={`/${me?.username}/add`}
           className={`flex flex-col items-center ${
-            pathname === `/add`
+            pathname.includes("/add")
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -52,9 +52,9 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Add</span>
         </Link>
         <Link
-          href={`/${me?.username}//messages`}
+          href={`/${me?.username}/messages`}
           className={`flex flex-col items-center ${
-            pathname === `/messages`
+            pathname.includes("/messages")
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}
@@ -65,7 +65,7 @@ export default function BottomBar() {
         <Link
           href={`/${me?.username}`}
           className={`flex flex-col items-center ${
-            pathname === ``
+            pathname===(`/${me?.username}`)
               ? "text-black dark:text-white"
               : "text-muted-foreground"
           }`}

@@ -84,9 +84,10 @@ export default function CreatePostPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center justify-between">
-        <Link href="/">
+        <button onClick={()=>window.history.back()}>
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+
+        </button>
         <h1 className="text-xl font-semibold">New post</h1>
         <Button
           onClick={handleShare}

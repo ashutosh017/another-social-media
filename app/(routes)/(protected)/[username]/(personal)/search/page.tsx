@@ -179,7 +179,7 @@ export default function SearchPage() {
       {!isSearching && !searchQuery ? (
         <>
           {/* Categories */}
-          <div className="px-4 py-3 border-b">
+          {/* <div className="px-4 py-3 border-b">
             <div className="flex gap-2 overflow-x-auto pb-2">
               {[
                 "For you",
@@ -201,7 +201,7 @@ export default function SearchPage() {
                 </Button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Recent Searches */}
           {recentSearches.length > 0 && (

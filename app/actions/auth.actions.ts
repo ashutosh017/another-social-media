@@ -5,7 +5,7 @@ import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
-import {User} from "@/lib/generated/prisma"
+import { User } from "@/lib/generated/prisma";
 export async function signin(values: { username: string; password: string }) {
   const user = await prisma.user.findFirst({
     where: {
@@ -85,3 +85,9 @@ export const getMe = async () => {
   }
   return null;
 };
+
+export async function LogOut() {
+  (await cookies()).delete("token");
+  redirect("/signin")
+
+}

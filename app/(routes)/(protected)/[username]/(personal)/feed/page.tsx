@@ -54,22 +54,26 @@ export default function HomePage() {
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Instagram</h1>
-        <div className="flex ">
-       
-          <Link href={`notifications`}>
-            <Button variant="ghost" size="sm">
-              <Heart className="h-6 w-6" />
+        <div className="flex  items-center">
+      {/* Notifications Button */}
+      <Link href="notifications">
+        <Button variant="ghost" size="sm" className="relative">
+          {/* Red Dot */}
 
-              <span className="sr-only">Notifications</span>
-            </Button>
-          </Link>
-             <Link href={`messages`}>
-            <Button variant="ghost" size="sm">
-              <MessageCircle className="h-6 w-6" />
-              <span className="sr-only">Messages</span>
-            </Button>
-          </Link>
-        </div>
+          {/* <div className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" /> */}
+          <Heart className="h-6 w-6" />
+          <span className="sr-only">Notifications</span>
+        </Button>
+      </Link>
+
+      {/* Messages Button */}
+      <Link href="messages">
+        <Button variant="ghost" size="sm">
+          <MessageCircle className="h-6 w-6" />
+          <span className="sr-only">Messages</span>
+        </Button>
+      </Link>
+    </div>
       </header>
 
       {/* Stories */}
@@ -123,7 +127,7 @@ export default function HomePage() {
                 <CardContent
                   className="p-0"
                   onClick={() => {
-                    router.replace(`/posts/${post.id}`);
+                    router.push(`/posts/${post.id}`);
                   }}
                 >
                   <Image
@@ -179,7 +183,7 @@ export default function HomePage() {
                       <span className="sr-only">Like</span>
                     </Button>
                     <Button
-                      onClick={() => router.replace(`/posts/${post.id}`)}
+                      onClick={() => router.push(`/posts/${post.id}`)}
                       variant="ghost"
                       size="icon"
                     >
@@ -235,7 +239,7 @@ export default function HomePage() {
                   </div>
                   {post.comments.length > 0 && (
                     <div
-                      onClick={() => router.replace(`/posts/${post.id}`)}
+                      onClick={() => router.push(`/posts/${post.id}`)}
                       className="text-sm text-muted-foreground"
                     >
                       View all {post.comments.length} comments
@@ -265,7 +269,7 @@ export default function HomePage() {
                 className="mt-6 px-4 py-2 text-sm bg-primary text-black rounded-full shadow hover:shadow-lg transition"
                 onClick={() => {
                   // Optional: trigger search modal or navigation
-                  router.replace(`${me?.username}/search`);
+                  router.push(`${me?.username}/search`);
                 }}
               >
                 Discover People

@@ -83,7 +83,7 @@ export default function page() {
       }
       const currentUser = await fetchUsertDetails(username);
       if (!currentUser) {
-        router.replace(`${me?.username}`);
+        router.push(`${me?.username}`);
       }
       const doIFollowCurrentUser = currentUser?.following.some(
         (following) => following.followerId === me?.id
@@ -184,7 +184,7 @@ export default function page() {
               </Button>
               <Button
                 onClick={() => {
-                  router.replace(me.username + "/messages/" + user?.username);
+                  router.push(me.username + "/messages/" + user?.username);
                 }}
               >
                 Message

@@ -153,15 +153,12 @@ export default function NotificationsPage() {
           ) {
             return {
               ...notification,
-              followRequest: {
-                ...notification.followRequest,
-                status: action === "accept" ? "ACCEPTED" : "DECLINED",
-              },
+              followRequest: null,
               isRead: true,
             };
           }
           return notification;
-        })
+        }),
     );
 
     acceptRejectFollowRequest(fromUserId, action === "accept");
@@ -190,15 +187,14 @@ export default function NotificationsPage() {
       {/* Header */}
       <header className="bg-white dark:bg-background border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 transition-colors">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-4">
-          <Link href={"feed"}>
             <Button
               variant="ghost"
               size="icon"
               className="hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={()=>window.history.back()}
             >
               <ArrowLeft className="w-6 h-6 text-gray-900 dark:text-gray-100" />
             </Button>
-          </Link>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             Notifications
           </h1>
@@ -336,14 +332,14 @@ export default function NotificationsPage() {
         </div>
 
         {/* Load More */}
-        <div className="p-4 text-center bg-white dark:bg-background transition-colors">
+        {/* <div className="p-4 text-center bg-white dark:bg-background transition-colors">
           <Button
             variant="ghost"
             className="text-blue-500 hover:bg-blue-50 dark:hover:bg-muted"
           >
             Load more notifications
           </Button>
-        </div>
+        </div> */}
       </main>
     </div>
   );

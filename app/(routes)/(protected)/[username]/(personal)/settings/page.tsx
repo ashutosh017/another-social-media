@@ -1,3 +1,6 @@
+'use client'
+
+import { LogOut } from "@/app/actions/auth.actions"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
@@ -51,9 +54,9 @@ export default function SettingsPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href={`./`} className="mr-2">
+        <button onClick={()=>window.history.back()} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <h1 className="text-xl font-semibold flex-1">Settings</h1>
       </header>
 
@@ -78,7 +81,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="p-4 mt-4">
-        <Button variant="outline" className="w-full text-blue-500 hover:text-blue-600">
+        <Button onClick={()=>LogOut()} variant="outline" className="w-full text-blue-500 hover:text-blue-600">
           Log Out
         </Button>
       </div>

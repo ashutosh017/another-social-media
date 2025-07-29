@@ -7,13 +7,14 @@ import { MeContext } from "@/components/me-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
-import { ArrowLeft, Edit, Search } from "lucide-react";
+import { ArrowLeft, Edit, MessageCircle, Search } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-import Pusher from 'pusher-js'
+import Pusher from "pusher-js";
 import { useChatSubscription } from "@/hooks/useChatSubscription";
+import { Button } from "@/components/ui/button";
 
 export default function MessagesPage() {
   const [conversations, setCovnersations] = useState<ConversationsType>();
@@ -33,10 +34,10 @@ export default function MessagesPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="./" className="mr-2">
+        <button onClick={() => window.history.back()} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-xl font-semibold flex-1">username</h1>
+        </button>
+        <h1 className="text-xl font-semibold flex-1">{me?.username}</h1>
         <Link href="#" className="ml-auto">
           <Edit className="h-5 w-5" />
         </Link>
@@ -52,35 +53,57 @@ export default function MessagesPage() {
 
       {/* Messages list */}
       <div className="divide-y">
-        {conversations?.map((_, i) => (
-          <Link
-            href={`/${username}/messages/${_.participants[0].user.username}`}
-            key={i}
-            className="flex items-center p-4 hover:bg-muted/50"
-          >
-            <Avatar className="h-12 w-12 mr-3">
-              <AvatarImage
-                src={_.participants[0].user.profilePicUrl ?? "/user.png"}
-                alt={_.participants[0].user.username}
-              />
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-baseline">
-                <p className="font-medium truncate">
-                  {_.participants[0].user.username}
+        {conversations ? (
+          conversations.length>0?conversations.map((_, i) => (
+            <Link
+              href={`/${username}/messages/${_.participants[0].user.username}`}
+              key={i}
+              className="flex items-center p-4 hover:bg-muted/50"
+            >
+              <Avatar className="h-12 w-12 mr-3">
+                <AvatarImage
+                  src={_.participants[0].user.profilePicUrl ?? "/user.png"}
+                  alt={_.participants[0].user.username}
+                />
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-baseline">
+                  <p className="font-medium truncate">
+                    {_.participants[0].user.username}
+                  </p>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                    {formatDistanceToNowStrict(_.messages[0].dateCreated, {
+                      addSuffix: true,
+                    })}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground truncate">
+                  {_.messages[0].content}
                 </p>
-                <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                  {formatDistanceToNowStrict(_.messages[0].dateCreated, {
-                    addSuffix: true,
-                  })}
-                </span>
               </div>
-              <p className="text-sm text-muted-foreground truncate">
-                {_.messages[0].content}
-              </p>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          )):
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+  <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
+  <h2 className="text-xl font-semibold">Your messages</h2>
+  <p className="text-sm text-muted-foreground">Send private messages to your friends and followers.</p>
+  <Button className="mt-4">Send Message</Button>
+</div>
+
+        ) : (
+        <div className="space-y-4 px-4 py-2">
+  {Array.from({ length: 6 }).map((_, i) => (
+    <div key={i} className="flex items-center gap-4 animate-pulse">
+      <div className="w-12 h-12 bg-muted rounded-full" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-muted rounded w-1/3" />
+        <div className="h-3 bg-muted-foreground rounded w-1/2" />
+      </div>
+    </div>
+  ))}
+</div>
+
+        )}
       </div>
     </div>
   );

@@ -157,7 +157,7 @@ export default function SignupPage() {
                 </div>
               )}
 
-              <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-4">
+              {/* <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-4">
                 People who use our service may have uploaded your contact
                 information to Instagram.{" "}
                 <Link
@@ -191,7 +191,7 @@ export default function SignupPage() {
                   Cookies Policy
                 </Link>
                 .
-              </div>
+              </div> */}
 
               <Button
                 type="submit"
