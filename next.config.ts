@@ -13,11 +13,6 @@ const nextConfig: NextConfig = {
       new URL("https://static.cdninstagram.com/**"),
     ],
   },
-  experimental:{
-    optimizePackageImports:[
-      '@prisma/client'
-    ]
-  }
 };
 
 export default nextConfig;
