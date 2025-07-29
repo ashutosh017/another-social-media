@@ -1,19 +1,21 @@
 // import { PrismaClient } from "@/app/generated/prisma";
-import { withAccelerate } from "@prisma/extension-accelerate";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 
 import { PrismaClient } from "@/app/generated/prisma";
 
 // const globalForPrisma = global as unknown as { prisma:  PrismaClient };
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-const prisma =
-  globalForPrisma.prisma ?? new PrismaClient().$extends(withAccelerate());
+// const prisma =
+//   globalForPrisma.prisma ?? new PrismaClient().$extends(withAccelerate());
 
 // if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 // export default prisma;
 
-// const prisma = globalForPrisma.prisma || new PrismaClient();
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+const prisma = globalForPrisma.prisma || new PrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
