@@ -27,6 +27,6 @@ export type SearchedUsersType = Awaited<ReturnType<typeof searchUsers>>;
 export type SearchFeedType = Awaited<ReturnType<typeof fetchSearchFeed>>;
 export type NotificationsType = Awaited<ReturnType<typeof fetchNotifications>>;
 
-export type searchedUsersToMessageType = Awaited<
+export type SearchedUsersToMessageType = Awaited<
   ReturnType<typeof searchUsersToSendMessage>
 >;

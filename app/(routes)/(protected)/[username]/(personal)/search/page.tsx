@@ -14,16 +14,16 @@ import { FollowButton } from "@/components/follow-btn";
 import { MeContext } from "@/components/me-context";
 import { SearchSkeleton } from "./SearchSkeleton";
 
-const mockHashtags = [
-  { tag: "photography", posts: "125M" },
-  { tag: "travel", posts: "89M" },
-  { tag: "food", posts: "156M" },
-  { tag: "nature", posts: "78M" },
-  { tag: "art", posts: "92M" },
-  { tag: "fitness", posts: "67M" },
-  { tag: "music", posts: "134M" },
-  { tag: "fashion", posts: "201M" },
-];
+// const mockHashtags = [
+//   { tag: "photography", posts: "125M" },
+//   { tag: "travel", posts: "89M" },
+//   { tag: "food", posts: "156M" },
+//   { tag: "nature", posts: "78M" },
+//   { tag: "art", posts: "92M" },
+//   { tag: "fitness", posts: "67M" },
+//   { tag: "music", posts: "134M" },
+//   { tag: "fashion", posts: "201M" },
+// ];
 
 // type mockUsers = {
 //   id: string;
