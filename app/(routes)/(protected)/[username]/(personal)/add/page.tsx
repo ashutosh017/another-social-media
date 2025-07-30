@@ -16,22 +16,8 @@ import { promise } from "zod";
 import { resolve } from "path";
 import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
 import { createNewPost } from "@/app/actions/posts.actions";
+import useDebounce from "@/hooks/useDebounce";
 
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 const Loading = ({ isShow }: { isShow: boolean }) => {
   console.log("Loading mounted");
@@ -50,7 +36,6 @@ const Loading = ({ isShow }: { isShow: boolean }) => {
 export default function CreatePostPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
-  const debouncedCaptionValue = useDebounce(caption, 500);
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 

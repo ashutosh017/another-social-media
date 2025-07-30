@@ -26,15 +26,15 @@ export const searchUsers = async (query: string) => {
           },
         },
         {
-          posts:{
-            some:{
-              caption:{
-                contains:query,
-                mode:"insensitive"
-              }
-            }
-          }
-        }
+          posts: {
+            some: {
+              caption: {
+                contains: query,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
       ],
     },
     select: {
@@ -45,13 +45,13 @@ export const searchUsers = async (query: string) => {
       following: {
         select: {
           id: true,
-          followerId:true
+          followerId: true,
         },
       },
-      receivedFollowRequests:{
-        where:{
-          senderId:me?.id
-        }
+      receivedFollowRequests: {
+        where: {
+          senderId: me?.id,
+        },
       },
       posts: {
         select: {
@@ -91,4 +91,50 @@ export const fetchSearchFeed = async () => {
     },
   });
   return posts;
+};
+
+export const searchUsersToSendMessage = async (query: string) => {
+  const me = await getMe();
+  if (!query.trim() || !me) {
+    return [];
+  }
+  console.log("search called");
+  console.log("query: ", query);
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [
+        {
+          name: {
+            contains: query,
+            mode: "insensitive",
+          },
+        },
+        {
+          username: {
+            contains: query,
+            mode: "insensitive",
+          },
+        },
+        {
+          posts: {
+            some: {
+              caption: {
+                contains: query,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
+      ],
+      NOT: {
+        username: me.username,
+      },
+    },
+    select: {
+      id: true,
+      username: true,
+    },
+  });
+
+  return users;
 };
