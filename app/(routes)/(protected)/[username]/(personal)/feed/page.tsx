@@ -53,7 +53,7 @@ export default function FeedPage() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Instagram</h1>
+        <h1 className="text-xl font-semibold">Dopaminly</h1>
         <div className="flex  items-center">
           {/* Notifications Button */}
           <Link href="notifications">

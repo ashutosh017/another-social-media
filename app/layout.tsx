@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Instagram",
-  description: "Instagram is a social media platform.",
+  title: "Dopaminly",
+  description: "Dopaminly is a social media platform.",
 };
 
 export default async function RootLayout({

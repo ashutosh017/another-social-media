@@ -52,10 +52,10 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-sm w-full">
-        {/* Instagram Logo */}
+        {/* Dopaminly Logo */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-400 bg-clip-text text-transparent">
-            Instagram
+            Dopaminly
           </h1>
         </div>
 
@@ -159,7 +159,7 @@ export default function SignupPage() {
 
               {/* <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-4">
                 People who use our service may have uploaded your contact
-                information to Instagram.{" "}
+                information to Dopaminly.{" "}
                 <Link
                   href="#"
                   className="text-blue-900 dark:text-blue-400 hover:underline"

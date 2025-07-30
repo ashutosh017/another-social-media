@@ -205,7 +205,7 @@ export default function FollowersPage() {
               </Avatar>
               <p className="text-lg font-semibold">Remove follower?</p>
               <p className="text-sm text-muted-foreground text-center">
-                Instagram won't tell {followerToRemove.username} they were
+                Dopaminly won't tell {followerToRemove.username} they were
                 removed from your followers.
               </p>
             </div>

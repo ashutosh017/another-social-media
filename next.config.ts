@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       new URL("https://media.newyorker.com/**"),
       new URL("https://res.cloudinary.com/**"),
-      new URL("https://static.cdninstagram.com/**"),
+      new URL("https://static.cdnDopaminly.com/**"),
     ],
   },
 };
