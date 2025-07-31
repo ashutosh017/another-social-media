@@ -1,5 +1,5 @@
 "use client";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -406,7 +406,7 @@ export default function PostPage() {
                                 {comment.user.username}
                               </Link>{" "}
                               <span className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(
+                                {formatDistanceToNowStrict(
                                   new Date(comment.dateCreated),
                                   {
                                     addSuffix: true,
