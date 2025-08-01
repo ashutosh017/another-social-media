@@ -70,7 +70,7 @@ export const searchUsers = async (query: string) => {
 export const fetchSearchFeed = async () => {
   const me = await getMe();
   if (!me) {
-    return;
+    return [];
   }
   const posts = await prisma.user.findMany({
     where: {

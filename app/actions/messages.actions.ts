@@ -86,7 +86,7 @@ export async function fetchConversationDetails(withUsername: string) {
   });
 
   if (!otherUser) {
-    return null; // or throw an error
+    throw new Error("User does not exist"); // or throw an error
   }
 
   const conversation = await prisma.conversation.findFirst({

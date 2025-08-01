@@ -3,6 +3,7 @@
 import prisma from "@/lib/db";
 import { getMe } from "./auth.actions";
 import { createNotification } from "./notifications.actions";
+import { redirect } from "next/navigation";
 
 const follow = async (followerId: string, followingId: string) => {
   await prisma.follow.create({
@@ -24,13 +25,13 @@ const unFollow = async (followerId: string, followingId: string) => {
 };
 
 const createFollowRequest = async (senderId: string, receiverId: string) => {
-  const res =await prisma.followRequest.create({
+  const res = await prisma.followRequest.create({
     data: {
       senderId,
       receiverId,
     },
   });
-  return res.id
+  return res.id;
 };
 
 const deleteFollowRequest = async (senderId: string, receiverId: string) => {
@@ -82,8 +83,10 @@ export const sendUnsendFollowRequest = async (toUserId: string) => {
       return;
     }
     if (isToUserAccountPrivate) {
-        const id = await createFollowRequest(me.id, toUserId);
-        createNotification(me.id, toUserId, "FOLLOW_REQUEST", {followRequestId:id})
+      const id = await createFollowRequest(me.id, toUserId);
+      createNotification(me.id, toUserId, "FOLLOW_REQUEST", {
+        followRequestId: id,
+      });
       return;
     }
 
@@ -204,4 +207,33 @@ export async function removeFollower(followerId: string) {
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function checkAllowanceToSeeFollowersAndFollowingList(
+  username: string
+) {
+  const me = await getMe();
+  const user = await prisma.user.findFirst({
+    where: {
+      username,
+    },
+  });
+  if (user?.public || me?.username === username) return true;
+  const isFollowing = await prisma.follow.findFirst({
+    where: {
+      AND: [
+        {
+          follower: {
+            username: me?.username,
+          },
+        },
+        {
+          following: {
+            username,
+          },
+        },
+      ],
+    },
+  });
+  return !!isFollowing;
 }
