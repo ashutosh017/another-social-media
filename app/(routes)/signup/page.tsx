@@ -32,6 +32,7 @@ const formSchema = z.object({
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSigningUp, setIsSigningUp] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,10 +44,12 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setErrorMessage("");
+    setIsSigningUp(true);
     const res = await signup(values);
     if (res.msg === "USER_ALREADY_EXIST") {
       setErrorMessage("This username is already taken.");
     }
+    setIsSigningUp(false);
   }
 
   return (
@@ -195,9 +198,10 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
+                disabled={isSigningUp}
                 className="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm"
               >
-                Sign up
+                {isSigningUp ? "Signing up..." : "Sign up"}
               </Button>
             </form>
           </Form>

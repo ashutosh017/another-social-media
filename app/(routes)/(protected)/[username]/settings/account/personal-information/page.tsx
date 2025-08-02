@@ -6,8 +6,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 
 export default function PersonalInformationPage() {
+  const [personalInfo, setPersonalInfo] = useState()
+  
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">

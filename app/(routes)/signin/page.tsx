@@ -8,7 +8,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -30,6 +29,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,10 +41,12 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     setErrorMessage("");
+    setIsLoggingIn(true);
     const res = await signin(values);
     if (res.msg === "WRONG_CREDENTIALS") {
       setErrorMessage("Incorrect username or password.");
     }
+    setIsLoggingIn(false);
   }
 
   return (
@@ -116,9 +118,10 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
+                disabled={isLoggingIn}
                 className="w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm mt-4"
               >
-                Log in
+                {isLoggingIn ? "Logging in..." : "Log in"}
               </Button>
             </form>
           </Form>
