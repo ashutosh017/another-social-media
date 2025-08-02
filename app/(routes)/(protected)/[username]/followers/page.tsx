@@ -3,7 +3,6 @@ import {
   fetchFollowers,
 } from "@/app/actions/follow.actions";
 import FollowersPage from "./followers-page";
-import { getMe } from "@/app/actions/auth.actions";
 
 export default async function page({
   params,
