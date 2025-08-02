@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   toggleLikePost,
   toggleSavePost,
@@ -41,6 +41,7 @@ export default function PostPage({
     return <div>user not found</div>;
   }
   const params = useParams();
+  const router = useRouter();
   const postId = params.postId as string;
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -273,7 +274,7 @@ export default function PostPage({
         >
           <ArrowLeft className="h-5 w-5 " />
         </Button>
-        <div className="flex items-center gap-2 flex-1">
+        <div onClick={()=>router.push(`/${post?.user.username}`)} className="flex items-center gap-2 flex-1">
           <Avatar className="h-8 w-8">
             <AvatarImage
               src={post?.user?.profilePicUrl || "/user.png"}
@@ -401,7 +402,7 @@ export default function PostPage({
                           <div className="flex-1">
                             <p className="text-sm">
                               <Link
-                                href={`/profile/${comment.user.username}`}
+                                href={`/${comment.user.username}`}
                                 className="font-semibold"
                               >
                                 {comment.user.username}
