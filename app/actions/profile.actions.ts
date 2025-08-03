@@ -30,7 +30,7 @@ export async function editProfile(values: {
   console.log("edit profile called")
 }
 
-export const fetchUsertDetails = async (username: string) => {
+export const fetchUserDetails = async (username: string) => {
   const user = await prisma.user.findFirst({
     where: {
       username,

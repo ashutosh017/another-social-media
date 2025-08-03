@@ -6,14 +6,14 @@ import {
 } from "../messages.actions";
 import { fetchNotifications } from "../notifications.actions";
 import { fetchPost } from "../posts.actions";
-import { fetchUsertDetails } from "../profile.actions";
+import { fetchUserDetails } from "../profile.actions";
 import {
   fetchSearchFeed,
   searchUsers,
   searchUsersToSendMessage,
 } from "../search.actions";
 
-export type UserType = Awaited<ReturnType<typeof fetchUsertDetails>>;
+export type UserType = Awaited<ReturnType<typeof fetchUserDetails>>;
 export type FollowersType = Awaited<ReturnType<typeof fetchFollowers>>;
 export type FollowingType = Awaited<ReturnType<typeof fetchFollowing>>;
 export type PostType = Awaited<ReturnType<typeof fetchPost>>;

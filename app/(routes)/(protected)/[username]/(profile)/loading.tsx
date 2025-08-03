@@ -1,4 +1,4 @@
-import ProfileSkeleton from "@/app/(routes)/(protected)/[username]/(profile)/profile-skeleton";
+import ProfileSkeleton from "./profile-skeleton";
 
 export default function Loading() {
   return <ProfileSkeleton />;

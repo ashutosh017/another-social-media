@@ -164,7 +164,7 @@ export default function MessagesPage({
               )}
               {filteredConversations.map((_, i) => (
                 <Link
-                  href={`/${username}/messages/${_.participants[0].user.username}`}
+                  href={`/messages/${_.participants[0].user.username}`}
                   key={i}
                   className="flex items-center p-4 hover:bg-muted/50"
                 >

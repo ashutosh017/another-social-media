@@ -12,7 +12,7 @@ export async function getFeed(username: string) {
     where: {
       user: {
         following: {
-          every: {
+          some: {
             followerId: me.id,
           },
         },

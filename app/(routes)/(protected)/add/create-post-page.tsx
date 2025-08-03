@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { ArrowLeft, Camera, ImageIcon, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import { uploadImageToCloudinary } from "@/app/actions/cloudinary.actions";
 import { createNewPost } from "@/app/actions/posts.actions";
+import { MeContext } from "@/components/me-context";
 
 const Loading = ({ isShow }: { isShow: boolean }) => {
   console.log("Loading mounted");
@@ -30,6 +31,7 @@ export default function CreatePostPage() {
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const me = useContext(MeContext);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -136,7 +138,7 @@ export default function CreatePostPage() {
                 <AvatarImage src="/user.png" alt="Your profile" />
                 <AvatarFallback>UN</AvatarFallback>
               </Avatar>
-              <span className="font-semibold">username</span>
+              <span className="font-semibold">{me?.username}</span>
             </div>
 
             {/* Caption */}

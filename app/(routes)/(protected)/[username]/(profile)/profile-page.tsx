@@ -38,13 +38,13 @@ export default function ProfilePage({
   if (!me) {
     return <div>The page your are looking does not exist.</div>;
   }
-   useEffect(() => {
-     function fetchUserWithUsername() {
+  useEffect(() => {
+    function fetchUserWithUsername() {
       if (!username) {
         console.log("username2: ", username);
         return;
       }
-      const currentUser = initialProfileDetails
+      const currentUser = initialProfileDetails;
       if (!currentUser) {
         router.push(`${me?.username}`);
       }
@@ -71,8 +71,6 @@ export default function ProfilePage({
     }
     fetchUserWithUsername();
   }, []);
-
-
 
   const handleFollow = async () => {
     if (!user) return;
@@ -111,8 +109,6 @@ export default function ProfilePage({
 
   console.log("username: ", username);
 
- 
-
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
@@ -127,7 +123,7 @@ export default function ProfilePage({
         <div className="flex gap-2 justify-end items-center">
           <ModeToggle />
 
-          <Link href={`/${user?.username}/settings`} className="">
+          <Link href={`/settings`} className="">
             <Settings className="h-5 w-5" />
           </Link>
         </div>
@@ -148,7 +144,7 @@ export default function ProfilePage({
               <div className="text-sm text-muted-foreground">Posts</div>
             </Link>
             <button
-              onClick={() => router.push(`/${user?.username}/followers `)}
+              onClick={() => router.push(`${user?.username}/followers `)}
               disabled={
                 !user?.public &&
                 followStatus !== "Following" &&
@@ -160,7 +156,7 @@ export default function ProfilePage({
               <div className="text-sm text-muted-foreground">Followers</div>
             </button>
             <button
-              onClick={() => router.push(`/${user?.username}/following`)}
+              onClick={() => router.push(`${user?.username}/following`)}
               disabled={
                 !user?.public &&
                 followStatus !== "Following" &&

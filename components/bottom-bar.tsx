@@ -14,7 +14,7 @@ export default function BottomBar() {
     <div className="fixed bottom-0 left-0 right-0 border-t bg-background max-w-md mx-auto">
       <div className="flex justify-around py-3">
         <Link
-          href={`/${me?.username}/feed`}
+          href={`/feed`}
           className={`flex flex-col items-center ${
             pathname.includes("/feed")
               ? "text-black dark:text-white"
@@ -25,7 +25,7 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Home</span>
         </Link>
         <Link
-          href={`/${me?.username}/search`}
+          href={`/search`}
           className={`flex flex-col items-center ${
             pathname.includes("/search")
               ? "text-black dark:text-white"
@@ -36,7 +36,7 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Search</span>
         </Link>
         <Link
-          href={`/${me?.username}/add`}
+          href={`/add`}
           className={`flex flex-col items-center ${
             pathname.includes("/add")
               ? "text-black dark:text-white"
@@ -52,7 +52,7 @@ export default function BottomBar() {
           <span className="text-xs mt-1">Add</span>
         </Link>
         <Link
-          href={`/${me?.username}/messages`}
+          href={`/messages`}
           className={`flex flex-col items-center ${
             pathname.includes("/messages")
               ? "text-black dark:text-white"

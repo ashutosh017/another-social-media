@@ -1,12 +1,15 @@
 "use client";
 
 import { LogOut } from "@/app/actions/auth.actions";
+import { MeContext } from "@/components/me-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useContext } from "react";
 
 export default function page() {
+  const me = useContext(MeContext);
   const router = useRouter();
   const settingsSections = [
     {
@@ -72,9 +75,13 @@ export default function page() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Link href="./" className="mr-2">
+        <Button
+        variant={"ghost"}
+        onClick={()=>window.history.back()}
+          className="mr-2"
+        >
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </Button>
         <h1 className="text-xl font-semibold flex-1">Settings</h1>
       </header>
 

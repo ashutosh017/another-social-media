@@ -23,7 +23,7 @@ export const EmptyFeed = () => {
       <button
         className="mt-6 px-4 py-2 text-sm bg-primary text-black rounded-full shadow hover:shadow-lg transition"
         onClick={() => {
-          router.push(`${me?.username}/search`);
+          router.push(`search`);
         }}
       >
         Discover People

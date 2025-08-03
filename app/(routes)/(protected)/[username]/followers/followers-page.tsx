@@ -152,7 +152,7 @@ export default function FollowersPage({
                           <Button
                             onClick={() =>
                               router.push(
-                                `${me?.username}/messages/${follower.username}`
+                                `messages/${follower.username}`
                               )
                             }
                             variant={"default"}
