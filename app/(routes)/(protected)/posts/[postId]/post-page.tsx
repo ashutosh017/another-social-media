@@ -15,10 +15,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import {
-  toggleLikePost,
-  toggleSavePost,
-} from "@/app/actions/posts.actions";
+import { toggleLikePost, toggleSavePost } from "@/app/actions/posts.actions";
 import { MeContext } from "@/components/me-context";
 import {
   addComment,
@@ -77,7 +74,7 @@ export default function PostPage({
     if (!commentSectionRef.current) return;
     const height = commentSectionRef.current.scrollHeight;
     setMaxed(height > 384); // 24rem
-  }, [post?.comments]);
+  }, [(post ?? initialPostDetails)?.comments]);
   useEffect(() => {
     function fetchPostWithId() {
       const p = initialPostDetails;
@@ -127,7 +124,7 @@ export default function PostPage({
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [post?.comments, newCommentId]);
+  }, [(post ?? initialPostDetails)?.comments, newCommentId]);
   useEffect(() => {
     if (replyTo && commentRef?.current) {
       commentRef.current.value = `@${replyTo} `;
@@ -166,7 +163,7 @@ export default function PostPage({
     } else {
       setPostLikes((prevLikes) => prevLikes + [1, -1][Number(isLiked)]);
       setIsLiked(!isLiked);
-      toggleLikePost(post?.id ?? null);
+      toggleLikePost((post ?? initialPostDetails)?.id ?? null);
     }
   };
 
@@ -274,20 +271,31 @@ export default function PostPage({
         >
           <ArrowLeft className="h-5 w-5 " />
         </Button>
-        <div onClick={()=>router.push(`/${post?.user.username}`)} className="flex items-center gap-2 flex-1">
+        <div
+          onClick={() =>
+            router.push(`/${(post ?? initialPostDetails)?.user.username}`)
+          }
+          className="flex items-center gap-2 flex-1"
+        >
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={post?.user?.profilePicUrl || "/user.png"}
-              alt={post?.user.username}
+              src={
+                (post ?? initialPostDetails)?.user?.profilePicUrl || "/user.png"
+              }
+              alt={(post ?? initialPostDetails)?.user.username}
             />
             <AvatarFallback>
-              {post?.user.username.substring(0, 2).toUpperCase()}
+              {(post ?? initialPostDetails)?.user.username
+                .substring(0, 2)
+                .toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold text-sm">{post?.user.username}</p>
-            {/* {post?.location && (
-              <p className="text-xs text-muted-foreground">{post?.location}</p>
+            <p className="font-semibold text-sm">
+              {(post ?? initialPostDetails)?.user.username}
+            </p>
+            {/* {(post??initialPostDetails)?.location && (
+              <p className="text-xs text-muted-foreground">{(post??initialPostDetails)?.location}</p>
             )} */}
           </div>
         </div>
@@ -299,10 +307,10 @@ export default function PostPage({
       <div className="flex flex-col ">
         {/* Post Image */}
         <div className="relative aspect-square w-full">
-          {post?.url && (
+          {initialPostDetails?.url && (
             <Image
-              src={post?.url}
-              alt={`Post by ${post?.user.username}`}
+              src={initialPostDetails?.url}
+              alt={`Post by ${(post ?? initialPostDetails)?.user.username}`}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
@@ -367,14 +375,22 @@ export default function PostPage({
               {postLikes} likes
             </p>
             <div className="text-sm">
-              <Link href={`/${post?.user.username}`} className="font-semibold">
-                {post?.user.username}
+              <Link
+                href={`/${(post ?? initialPostDetails)?.user.username}`}
+                className="font-semibold"
+              >
+                {(post ?? initialPostDetails)?.user.username}
               </Link>{" "}
-              {post?.caption}
+              {(post ?? initialPostDetails)?.caption}
             </div>
             <p className="text-xs text-muted-foreground">
-              {post?.dateCreated &&
-                formatDistanceToNow(post?.dateCreated, { addSuffix: true })}
+              {(post ?? initialPostDetails)?.dateCreated &&
+                formatDistanceToNow(
+                  new Date(
+                    (post ?? initialPostDetails)?.dateCreated ?? Date.now()
+                  ),
+                  { addSuffix: true }
+                )}
             </p>
           </div>
         </div>
@@ -384,8 +400,8 @@ export default function PostPage({
           <ScrollArea className={cn("p-4 border-b", maxed ? "h-96" : "h-fit")}>
             <h3 className="font-semibold text-sm mb-3">Comments</h3>
             <div ref={commentSectionRef} className={cn("space-y-4  ")}>
-              {post && post?.comments.length > 0 ? (
-                post?.comments.map((comment, index) => (
+              {post && (post ?? initialPostDetails)?.comments.length > 0 ? (
+                (post ?? initialPostDetails)?.comments.map((comment, index) => (
                   <div id={comment.id} key={index} className="mb-4 pr-2 ">
                     <div className="flex gap-3">
                       <Avatar className="h-8 w-8 flex-shrink-0">
@@ -576,10 +592,10 @@ export default function PostPage({
       </div>
       <div ref={bottomRef}></div>
       <LikesModal
-        likes={post?.likes ? post.likes : []}
+        likes={(post ?? initialPostDetails)?.likes ?? []}
         onOpenChange={setIsLikesWindowOpen}
         open={isLikesWindowOpen}
-        totalLikes={post?.likes ? post.likes.length : 0}
+        totalLikes={(post ?? initialPostDetails)?.likes?.length ?? 0}
       />
     </div>
   );

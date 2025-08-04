@@ -149,6 +149,6 @@ export const hasNewNotifications = async () => {
     },
   });
   const newNotifications = notifications.some((n) => n.isRead === true);
-  console.log("new notifications: ", newNotifications)
+  // console.log("new notifications: ", newNotifications)
   return newNotifications;
 };

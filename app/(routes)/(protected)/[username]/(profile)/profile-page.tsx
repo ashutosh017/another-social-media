@@ -24,9 +24,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 export default function ProfilePage({
-  initialProfileDetails,
+  initialUserDetails,
 }: {
-  initialProfileDetails: UserType;
+  initialUserDetails: UserType;
 }) {
   const me = useContext(MeContext);
   const { username } = useParams<{ username: string }>();
@@ -44,7 +44,7 @@ export default function ProfilePage({
         console.log("username2: ", username);
         return;
       }
-      const currentUser = initialProfileDetails;
+      const currentUser = initialUserDetails;
       if (!currentUser) {
         router.push(`${me?.username}`);
       }
@@ -75,11 +75,11 @@ export default function ProfilePage({
   const handleFollow = async () => {
     if (!user) return;
     followStatus === "Follow"
-      ? user.public
+      ? (user?user:initialUserDetails)?.public
         ? setFollowStatus("Following")
         : setFollowStatus("Requested")
       : setFollowStatus("Follow");
-    if (user.public && followStatus === "Follow") {
+    if ((initialUserDetails)?.public && followStatus === "Follow") {
       setUser(
         (prev) =>
           prev && {
@@ -89,7 +89,7 @@ export default function ProfilePage({
               {
                 dateCreated: new Date(),
                 followerId: me.id,
-                followingId: user.id,
+                followingId: (user?user:initialUserDetails)?.id,
                 id: "new_follower",
               },
             ],
@@ -104,7 +104,7 @@ export default function ProfilePage({
           }
       );
     }
-    sendUnsendFollowRequest(user.id);
+    sendUnsendFollowRequest(user?.id);
   };
 
   console.log("username: ", username);
@@ -113,8 +113,8 @@ export default function ProfilePage({
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
         <h1 className="text-xl font-semibold flex-1 flex items-center    gap-2">
-          {user?.username ?? "username"}
-          {user?.public ? (
+          {(user?user:initialUserDetails)?.username}
+          {(user?user:initialUserDetails)?.public ? (
             <Globe className="w-4 h-4 mb-0.5" />
           ) : (
             <Lock className="w-4 h-4 mb-0.5" />
@@ -132,7 +132,9 @@ export default function ProfilePage({
         <div className="flex items-center gap-8">
           <Avatar className="h-20 w-20">
             <AvatarImage
-              src={user?.profilePicUrl ?? "/user.png"}
+              src={
+                (user?user:initialUserDetails)?.profilePicUrl ?? "/(user?user:initialUserDetails)?.png"
+              }
               alt="Profile"
             />
             <AvatarFallback>UN</AvatarFallback>
@@ -140,45 +142,59 @@ export default function ProfilePage({
 
           <div className="flex gap-4 text-center">
             <Link href="#" className="block">
-              <div className="font-semibold">{user?.posts.length}</div>
+              <div className="font-semibold">
+                {(user?user:initialUserDetails)?.posts.length}
+              </div>
               <div className="text-sm text-muted-foreground">Posts</div>
             </Link>
             <button
-              onClick={() => router.push(`${user?.username}/followers `)}
+              onClick={() =>
+                router.push(`${(user?user:initialUserDetails)?.username}/followers `)
+              }
               disabled={
-                !user?.public &&
+                !(user?user:initialUserDetails)?.public &&
                 followStatus !== "Following" &&
-                user?.id !== me.id
+                (user?user:initialUserDetails)?.id !== me.id
               }
               className="block"
             >
-              <div className="font-semibold">{user?.following.length}</div>
+              <div className="font-semibold">
+                {(user?user:initialUserDetails)?.following.length}
+              </div>
               <div className="text-sm text-muted-foreground">Followers</div>
             </button>
             <button
-              onClick={() => router.push(`${user?.username}/following`)}
+              onClick={() =>
+                router.push(`${(user?user:initialUserDetails)?.username}/following`)
+              }
               disabled={
-                !user?.public &&
+                !(user?user:initialUserDetails)?.public &&
                 followStatus !== "Following" &&
-                user?.id !== me.id
+                (user?user:initialUserDetails)?.id !== me.id
               }
               className="block"
             >
-              <div className="font-semibold">{user?.followers.length}</div>
+              <div className="font-semibold">
+                {(user?user:initialUserDetails)?.followers.length}
+              </div>
               <div className="text-sm text-muted-foreground">Following</div>
             </button>
           </div>
         </div>
 
         <div className="mt-4">
-          <h2 className="font-semibold">{user?.name}</h2>
-          <p className="text-sm mt-1">{user?.bio}</p>
+          <h2 className="font-semibold">
+            {(user ? user : initialUserDetails)?.name}
+          </h2>
+          <p className="text-sm mt-1">
+            {(user ? user : initialUserDetails)?.bio}
+          </p>
         </div>
 
         <div>
-          {user?.id === me?.id ? (
+          {(user?user:initialUserDetails)?.id === me?.id ? (
             <div className="mt-4 flex gap-2">
-              <EditProfileDialog user={user} setUser={setUser} />
+              <EditProfileDialog user={initialUserDetails} setUser={setUser} />
               <Button variant="outline" className="flex-1">
                 Share Profile
               </Button>
@@ -197,7 +213,9 @@ export default function ProfilePage({
               </Button>
               <Button
                 onClick={() => {
-                  router.push(me.username + "/messages/" + user?.username);
+                  router.push(
+                    me.username + "/messages/" + (user?user:initialUserDetails)?.username
+                  );
                 }}
               >
                 Message
@@ -209,7 +227,20 @@ export default function ProfilePage({
         <div></div>
       </div>
 
-      {user?.public || user?.id === me.id ? (
+      {!(user?user:initialUserDetails)?.public &&
+      (user?user:initialUserDetails)?.username !== me.username ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
+            <Lock className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">
+            This Account is Private
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-sm">
+            Follow this account to see their photos and videos.
+          </p>
+        </div>
+      ) : (
         <Tabs defaultValue="posts" className="">
           <TabsList className="w-full grid grid-cols-2 bg-transparent mb-4">
             <TabsTrigger
@@ -227,20 +258,20 @@ export default function ProfilePage({
           </TabsList>
 
           <TabsContent value="posts" className="mt-2 mx-1">
-            {user && user.posts.length > 0 ? (
+            {initialUserDetails?.posts && initialUserDetails.posts.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
-                {user?.posts.map((post, i) => (
+                {(initialUserDetails)?.posts.map((post, i) => (
                   <Link
                     href={`/posts/${post.id}`}
                     key={i}
                     className="aspect-square relative"
                   >
                     <Image
-                      src={post.url || "/placeholder.svg"}
+                      src={post.url}
                       alt={`Post ${i + 1}`}
                       fill
                       priority={true}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                   </Link>
@@ -267,20 +298,20 @@ export default function ProfilePage({
           </TabsContent>
 
           <TabsContent value="tagged" className="mt-2 mx-1">
-            {user && user.tagged?.length > 0 ? (
+            {Array.isArray(initialUserDetails?.tagged) && initialUserDetails.tagged.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
-                {user.tagged?.map((post, i) => (
+                {(initialUserDetails)?.tagged?.map((post, i) => (
                   <Link
                     href={`/posts/${post.id}`}
                     key={i}
                     className="aspect-square relative"
                   >
                     <Image
-                      src={post.url || "/placeholder.svg"}
+                      src={post.url}
                       alt={`Tagged post ${i + 1}`}
                       fill
                       priority={true}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                   </Link>
@@ -291,25 +322,14 @@ export default function ProfilePage({
                 <SquareUser className="w-16 h-16 mb-4 text-gray-400" />
                 <h2 className="text-lg font-semibold">No Tagged Posts</h2>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Posts {user?.id === me.id ? "you're" : "this user"} tagged in
-                  will appear here.
+                  Posts{" "}
+                  {(user?user:initialUserDetails)?.id === me.id ? "you're" : "this user"}{" "}
+                  tagged in will appear here.
                 </p>
               </div>
             )}
           </TabsContent>
         </Tabs>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
-            <Lock className="h-12 w-12 text-muted-foreground" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">
-            This Account is Private
-          </h3>
-          <p className="text-muted-foreground mb-6 max-w-sm">
-            Follow this account to see their photos and videos.
-          </p>
-        </div>
       )}
 
       <div></div>

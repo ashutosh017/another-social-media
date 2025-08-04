@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
 import { User } from "@/lib/generated/prisma";
+import { cache } from "react";
 export async function signin(values: { username: string; password: string }) {
   const user = await prisma.user.findFirst({
     where: {
@@ -57,7 +58,10 @@ export async function signup(values: {
   };
 }
 
-export const getMe = async () => {
+let i = 0;
+export const getMe = cache(async () => {
+  console.log("get me called: ", i);
+  i++;
   const cookiesStore = await cookies();
   const token = cookiesStore.get("token")?.value;
   if (!token) {
@@ -82,12 +86,11 @@ export const getMe = async () => {
     return safeUser;
   }
   return null;
-};
+});
 
 export async function LogOut() {
   (await cookies()).delete("token");
-  redirect("/signin")
-
+  redirect("/signin");
 }
 
-// export async function 
+// export async function
