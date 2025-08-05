@@ -110,6 +110,6 @@ export async function addComment(
       });
     }
   } catch (error) {
-    console.log("error in creating comment: ", error);
+    // console.log("error in creating comment: ", error);
   }
 }

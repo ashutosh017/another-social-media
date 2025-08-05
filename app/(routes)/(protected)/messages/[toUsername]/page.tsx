@@ -12,9 +12,9 @@ export default async function page({
   let conversation;
   try {
     conversation = await fetchConversationDetails(toUsername);
+    // console.log("conv fetched: ", conversation)
   } catch (error) {
     redirect("./");
   }
-  // await wait(30000)
   return <ChatPage initialConversation={conversation} />;
 }

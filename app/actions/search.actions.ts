@@ -8,8 +8,8 @@ export const searchUsers = async (query: string) => {
   if (!query.trim() || !me) {
     return [];
   }
-  console.log("search called");
-  console.log("query: ", query);
+  // console.log("search called");
+  // console.log("query: ", query);
   const users = await prisma.user.findMany({
     where: {
       OR: [
@@ -63,7 +63,7 @@ export const searchUsers = async (query: string) => {
       isVerified: true,
     },
   });
-  console.log("users:", users);
+  // console.log("users:", users);
   return users;
 };
 
@@ -98,8 +98,8 @@ export const searchUsersToSendMessage = async (query: string) => {
   if (!query.trim() || !me) {
     return [];
   }
-  console.log("search called");
-  console.log("query: ", query);
+  // console.log("search called");
+  // console.log("query: ", query);
   const users = await prisma.user.findMany({
     where: {
       OR: [

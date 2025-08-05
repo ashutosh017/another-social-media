@@ -4,25 +4,16 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  ArrowLeft,
-  Info,
-  MessageCircle,
-  Phone,
-  Send,
-  Video,
-} from "lucide-react";
+import { ArrowLeft, Phone, Send, Video } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { MeContext } from "@/components/me-context";
 import {
-  fetchConversationDetails,
   sendMessage,
 } from "@/app/actions/messages.actions";
 import { ConversationDetailsType } from "@/app/actions/types";
-import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatSubscription } from "@/hooks/useChatSubscription";
-import ChatSkeleton from "./chat-skeleton";
 import EmptyChat from "./empty-chat";
 
 export default function ChatPage({
@@ -34,7 +25,6 @@ export default function ChatPage({
   const params = useParams();
   const me = useContext(MeContext);
   const toUsername = params.toUsername as string;
-  const username = params.username as string;
   const [message, setMessage] = useState("");
   const [conversation, setConversation] =
     useState<ConversationDetailsType>(null);
@@ -43,41 +33,44 @@ export default function ChatPage({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversation?.messages]);
+  }, [(conversation ?? initialConversation)?.messages]);
   useEffect(() => {
-    if (me?.username !== username) router.push(`/${me?.username}`);
     if (inputRef) inputRef.current?.focus();
     if (initialConversation) setConversation(initialConversation);
   }, []);
-  useChatSubscription(conversation?.id ?? "", (msg) => {
-    console.log("use chat conv ran");
-    const newMessageId = crypto.randomUUID();
-    if (!conversation) return;
-    setConversation(
-      (prev) =>
-        prev && {
-          ...prev,
-          messages: [
-            ...prev.messages,
-            {
-              content: msg.content,
-              conversationId: prev.id,
-              dateCreated: new Date(),
-              id: newMessageId,
-              sender: conversation.participants[0].user,
-              senderId: msg.senderId,
-              seen: false,
-            },
-          ],
-        }
-    );
-  });
+  useChatSubscription(
+    (conversation ?? initialConversation)?.id ?? "",
+    (msg) => {
+      // console.log("use chat conv ran");
+      const newMessageId = crypto.randomUUID();
+      if (!conversation) return;
+      setConversation(
+        (prev) =>
+          prev && {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                content: msg.content,
+                conversationId: prev.id,
+                dateCreated: new Date(),
+                id: newMessageId,
+                sender: (conversation ?? initialConversation)?.participants[0]
+                  .user,
+                senderId: msg.senderId,
+                seen: false,
+              },
+            ],
+          }
+      );
+    }
+  );
 
   const handleSend = () => {
     if (message.trim()) {
       // In a real app, you would send the message to the server
       sendMessage(message, toUsername);
-      console.log("Sending message:", message);
+      // console.log("Sending message:", message);
       setMessage("");
     }
   };
@@ -95,7 +88,7 @@ export default function ChatPage({
           <Avatar className="h-8 w-8 mr-2">
             <AvatarImage
               src={
-                conversation?.participants.find(
+                (conversation ?? initialConversation)?.participants.find(
                   (p) => p.user.username === toUsername
                 )?.user.profilePicUrl ?? "/user.png"
               }
@@ -128,11 +121,15 @@ export default function ChatPage({
         {conversation ? (
           <div
             className={`flex flex-col gap-4 ${
-              conversation?.messages?.length === 1 ? "justify-end" : ""
+              (conversation ?? initialConversation)?.messages?.length === 1
+                ? "justify-end"
+                : ""
             } h-full`}
           >
-            {conversation.messages.map((msg, idx) => {
-              const isLast = idx === conversation.messages.length - 1;
+            {(conversation ?? initialConversation)?.messages.map((msg, idx) => {
+              const isLast =
+                idx ===
+                (conversation ?? initialConversation)?.messages.length - 1;
 
               return (
                 <div
@@ -156,7 +153,7 @@ export default function ChatPage({
                           : "text-muted-foreground"
                       }`}
                     >
-                      {formatDistanceToNow(msg.dateCreated, {
+                      {formatDistanceToNowStrict(msg.dateCreated, {
                         addSuffix: true,
                       })}
                     </p>

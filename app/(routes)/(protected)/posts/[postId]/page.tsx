@@ -1,6 +1,7 @@
 import { fetchPost } from "@/app/actions/posts.actions";
 import PostPage from "./post-page";
 import wait from "@/lib/wait";
+import { notFound } from "next/navigation";
 
 export default async function page({
   params,
@@ -10,5 +11,12 @@ export default async function page({
   const postId = (await params).postId;
 
   const postDetails = await fetchPost(postId);
-  return <PostPage initialPostDetails={postDetails} />;
+  const isPrivatePost =
+    !postDetails?.user.public && !!postDetails?.user.following;
+    // console.log(isPrivatePost)
+    // console.log(postDetails)
+    if(!postDetails)notFound()
+  return (
+    <PostPage initialPostDetails={postDetails} isPrivatePost={isPrivatePost} />
+  );
 }

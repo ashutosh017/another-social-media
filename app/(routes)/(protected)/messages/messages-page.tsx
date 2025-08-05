@@ -36,7 +36,7 @@ export default function MessagesPage({
 }: {
   initialConversations: ConversationsType;
 }) {
-  const [conversations, setCovnersations] = useState<ConversationsType>();
+
   const params = useParams();
   const username = params.username;
   const me = useContext(MeContext);
@@ -52,13 +52,11 @@ export default function MessagesPage({
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [users, setUsers] = useState<SearchedUsersToMessageType>();
 
-  useEffect(() => {
-    setCovnersations(initialConversations);
-  }, []);
+
 
   useEffect(() => {
     if (debouncedQuery) {
-      console.log("debounced query changed : ", debouncedQuery);
+      // console.log("debounced query changed : ", debouncedQuery);
       async function callSearchUsers() {
         const usrs = await searchUsersToSendMessage(debouncedQuery);
         if (usrs) {
@@ -70,13 +68,13 @@ export default function MessagesPage({
   }, [debouncedQuery]);
 
   const filteredConversations = useMemo(() => {
-    if (!conversations || !searchQuery.trim()) return conversations;
-    return conversations.filter((conv) =>
+    if (!initialConversations || !searchQuery.trim()) return initialConversations;
+    return initialConversations.filter((conv) =>
       conv.participants.some((p) =>
         p.user.username.includes(searchQuery.toLowerCase())
       )
     );
-  }, [conversations, debouncedQuery]);
+  }, [initialConversations, debouncedQuery]);
 
   // Search function
   const handleUserSearch = (query: string) => {
@@ -100,7 +98,7 @@ export default function MessagesPage({
   const handleSendMessage = () => {
     if (message.trim() && selectedRecipient) {
       // Handle sending message logic here
-      console.log(
+      // console.log(
         "Sending message to:",
         selectedRecipient.username,
         "Message:",
@@ -152,7 +150,7 @@ export default function MessagesPage({
 
       {/* Messages list */}
       <div className="divide-y">
-        {conversations ? (
+        {initialConversations ? (
           filteredConversations && filteredConversations.length > 0 ? (
             <>
               {searchQuery && (

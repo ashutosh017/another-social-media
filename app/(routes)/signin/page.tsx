@@ -39,7 +39,7 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    // console.log(values);
     setErrorMessage("");
     setIsLoggingIn(true);
     const res = await signin(values);

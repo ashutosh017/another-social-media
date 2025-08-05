@@ -94,7 +94,7 @@ export default function NotificationsPage({
     notificationId: string,
     action: "accept" | "decline"
   ) => {
-    console.log("handlefollow request called");
+    // console.log("handlefollow request called");
 
     setNotifications(
       (prev) =>
@@ -214,7 +214,7 @@ export default function NotificationsPage({
                 <div
                   className="flex items-center gap-2"
                   onClick={() => {
-                    console.log("mark as seen called");
+                    // console.log("mark as seen called");
                     markAsSeenNotification(notification.id);
                   }}
                 >

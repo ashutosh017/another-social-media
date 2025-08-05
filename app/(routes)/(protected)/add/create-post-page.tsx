@@ -14,7 +14,7 @@ import { createNewPost } from "@/app/actions/posts.actions";
 import { MeContext } from "@/components/me-context";
 
 const Loading = ({ isShow }: { isShow: boolean }) => {
-  console.log("Loading mounted");
+  // console.log("Loading mounted");
   if (!isShow) return null;
 
   return (
@@ -46,14 +46,14 @@ export default function CreatePostPage() {
 
   const handleShare = async () => {
     setIsLoading(true);
-    console.log("Sharing post:", { image: selectedImage, caption, location });
+    // console.log("Sharing post:", { image: selectedImage, caption, location });
     if (!selectedImage) return;
     const res = await uploadImageToCloudinary(selectedImage);
-    console.log(res.data.secure_url);
+    // console.log(res.data.secure_url);
     try {
       await createNewPost(res.data.secure_url, caption);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
     setSelectedImage(null);
     setCaption("");

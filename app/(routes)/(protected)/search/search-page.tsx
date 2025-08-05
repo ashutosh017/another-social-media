@@ -63,7 +63,7 @@ export default function SearchPage({
   };
 
   const performSearch = async (query: string) => {
-    console.log("perform search called");
+    // console.log("perform search called");
     if (!query.trim()) {
       setSearchResults([]);
       setIsSearching(false);
@@ -161,11 +161,11 @@ export default function SearchPage({
             </div>
           )}
 
-          {!searchFeed ? (
+          {!(searchFeed ?? initialSearchFeed) ? (
             <SearchSkeleton />
           ) : (
             <div className="grid grid-cols-3 gap-0.5">
-              {searchFeed
+              {(searchFeed ?? initialSearchFeed)
                 .flatMap((sf) => sf.posts)
                 .flatMap((post) => (
                   <Link
@@ -177,7 +177,6 @@ export default function SearchPage({
                       src={post.url}
                       alt={`Explore post ${post.id}`}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover hover:opacity-90 transition-opacity"
                     />
                   </Link>

@@ -45,7 +45,7 @@ export async function fetchNotifications() {
       dateCreated: "desc",
     },
   });
-  console.log("notifications: ", notifications);
+  // console.log("notifications: ", notifications);
   return notifications;
 }
 
@@ -117,7 +117,7 @@ export async function createNotification(
 }
 
 export async function markAsSeenNotification(id: string) {
-  console.log("marked notification called");
+  // console.log("marked notification called");
   await prisma.notification.update({
     where: {
       id,
@@ -149,6 +149,6 @@ export const hasNewNotifications = async () => {
     },
   });
   const newNotifications = notifications.some((n) => n.isRead === true);
-  // console.log("new notifications: ", newNotifications)
+  // // console.log("new notifications: ", newNotifications)
   return newNotifications;
 };

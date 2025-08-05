@@ -74,10 +74,12 @@ export async function fetchConversations() {
   return conversations;
 }
 export async function fetchConversationDetails(withUsername: string) {
+  // console.log("fetch conv called: ", withUsername)
   const me = await getMe();
   if (!me) {
     return null;
   }
+  // console.log("after me fun")
 
   const otherUser = await prisma.user.findUnique({
     where: {
@@ -86,6 +88,7 @@ export async function fetchConversationDetails(withUsername: string) {
   });
 
   if (!otherUser) {
+    // console.log("no other user exists: ", otherUser)
     throw new Error("User does not exist"); // or throw an error
   }
 

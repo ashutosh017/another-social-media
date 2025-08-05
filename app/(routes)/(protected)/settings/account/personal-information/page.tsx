@@ -9,35 +9,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react";
 
 export default function PersonalInformationPage() {
-  const [personalInfo, setPersonalInfo] = useState<UserType>();
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const me = useContext(MeContext);
-  const username = useParams<{ username: string }>().username;
-  const router = useRouter();
   useEffect(() => {
-    async function callFetchUserDetails() {
-      if (!me || me.username !== username) {
-        router.push(`/${me?.username}`);
-      }
-      const res = await fetchUserDetails(username);
-      if (res) {
+    function callFetchUserDetails() {
+      if (me) {
         valuesRef.current = {
-          bio: res.bio ?? "",
-          name: res.name,
-          username: res.username,
+          bio: me.bio ?? "",
+          name: me.name,
+          username: me.username,
         };
       }
-      setPersonalInfo(res);
     }
     callFetchUserDetails();
   }, []);
 
-  const handleSaveChanges = async() => {
-    console.log(valuesRef.current);
+  const handleSaveChanges = async () => {
+    // console.log(valuesRef.current);
     setIsSavingDetails(true);
     await editProfile({ ...valuesRef.current });
     setIsSavingDetails(false);
@@ -59,7 +50,7 @@ export default function PersonalInformationPage() {
           <Input
             id="name"
             placeholder="Your name"
-            defaultValue={personalInfo?.name}
+            defaultValue={me?.name}
             onChange={(e) => {
               if (valuesRef.current) {
                 valuesRef.current.name = e.target.value;
@@ -73,7 +64,7 @@ export default function PersonalInformationPage() {
           <Input
             id="username"
             placeholder="@username"
-            defaultValue={personalInfo?.username}
+            defaultValue={me?.username}
             onChange={(e) => {
               if (valuesRef.current) {
                 valuesRef.current.username = e.target.value;
@@ -87,13 +78,13 @@ export default function PersonalInformationPage() {
           <Textarea
             id="bio"
             placeholder="Your bio"
-            defaultValue={personalInfo?.bio ?? ""}
+            defaultValue={me?.bio ?? ""}
             className="min-h-[100px]"
             onChange={(e) => {
               if (valuesRef.current) {
                 valuesRef.current.bio = e.target.value;
               }
-              console.log(valuesRef.current?.bio);
+              // console.log(valuesRef.current?.bio);
             }}
           />
         </div>

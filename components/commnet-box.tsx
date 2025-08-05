@@ -12,7 +12,7 @@ export const CommentBox = (
     commentRef,
     handleComment,
   }: CommentBoxProps) => {
-    console.log("comment box render")
+    // console.log("comment box render")
     const [comment, setComment] = useState("");
     return (
       <div className="">

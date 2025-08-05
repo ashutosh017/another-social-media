@@ -9,9 +9,11 @@ export async function fetchPost(postId: string) {
     name: true,
     username: true,
     profilePicUrl: true,
+    public: true,
   };
   try {
     const me = await getMe();
+    // const isPrivatePost = await
     if (!me) return;
     const post = await prisma.post.findFirst({
       where: {
@@ -24,7 +26,17 @@ export async function fetchPost(postId: string) {
           },
         },
         user: {
-          select: userFields,
+          select: {
+            ...userFields,
+            following: {
+              where: {
+                followerId: me.id,
+              },
+              select: {
+                followerId: true,
+              },
+            },
+          },
         },
         likes: {
           select: {
@@ -67,10 +79,9 @@ export async function fetchPost(postId: string) {
         },
       },
     });
-
     return post;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 }
 
@@ -114,7 +125,7 @@ export async function toggleSavePost(postId: string) {
     if (!me) {
       return;
     }
-    console.log("save post  called");
+    // console.log("save post  called");
     const isSaved = await prisma.savedPost.findFirst({
       where: {
         postId,
@@ -139,7 +150,7 @@ export async function toggleSavePost(postId: string) {
       });
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 }
 

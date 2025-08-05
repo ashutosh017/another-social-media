@@ -1,6 +1,6 @@
 import { getMe } from "@/app/actions/auth.actions";
 import BottomBar from "@/components/bottom-bar";
-import { MeContext, MeContextProvider } from "@/components/me-context";
+import { MeContextProvider } from "@/components/me-context";
 
 
 export default async function ProtectedRoutesLayout({
@@ -20,4 +20,4 @@ export default async function ProtectedRoutesLayout({
   );
 }
 
-export const dynamic = "force-dynamic"
+// export const dynamic = "force-dynamic"

@@ -1,7 +1,8 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, User, MessageSquare, Plus, MessageCircle } from "lucide-react";
+import { Home, Search, User, Plus, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { MeContext } from "./me-context";
@@ -10,68 +11,62 @@ export default function BottomBar() {
   const me = useContext(MeContext);
   const pathname = usePathname();
 
+  const navItems = [
+    { href: "/feed", icon: Home, label: "Home" },
+    { href: "/search", icon: Search, label: "Search" },
+    { href: "/add", icon: Plus, label: "Add", isSpecial: true },
+    { href: "/messages", icon: MessageCircle, label: "Messages" },
+  ];
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t bg-background max-w-md mx-auto">
-      <div className="flex justify-around py-3">
-        <Link
-          href={`/feed`}
-          className={`flex flex-col items-center ${
-            pathname.includes("/feed")
-              ? "text-black dark:text-white"
-              : "text-muted-foreground"
-          }`}
-        >
-          <Home className="h-6 w-6" />
-          <span className="text-xs mt-1">Home</span>
-        </Link>
-        <Link
-          href={`/search`}
-          className={`flex flex-col items-center ${
-            pathname.includes("/search")
-              ? "text-black dark:text-white"
-              : "text-muted-foreground"
-          }`}
-        >
-          <Search className="h-6 w-6" />
-          <span className="text-xs mt-1">Search</span>
-        </Link>
-        <Link
-          href={`/add`}
-          className={`flex flex-col items-center ${
-            pathname.includes("/add")
-              ? "text-black dark:text-white"
-              : "text-muted-foreground"
-          }`}
-        >
-          <Plus
-            className={cn(
-              "h-6 w-6 border-2 p-0.5 rounded-md",
-              pathname.includes("/add") ? "border-white" : "border-muted-foreground"
-            )}
-          />
-          <span className="text-xs mt-1">Add</span>
-        </Link>
-        <Link
-          href={`/messages`}
-          className={`flex flex-col items-center ${
-            pathname.includes("/messages")
-              ? "text-black dark:text-white"
-              : "text-muted-foreground"
-          }`}
-        >
-          <MessageCircle className="h-6 w-6" />
-          <span className="text-xs mt-1">Messages</span>
-        </Link>
+    <div className="fixed bottom-0 left-0 right-0 border-t bg-background max-w-md mx-auto z-50">
+      <div className="flex justify-around ">
+        {navItems.map(({ href, icon: Icon, label, isSpecial }) => {
+          const isActive = pathname.includes(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex flex-col items-center justify-center px-4 py-2", // added padding
+                isActive
+                  ? "text-black dark:text-white"
+                  : "text-muted-foreground"
+              )}
+            >
+              <div className="flex flex-col items-center justify-center w-16 h-14">
+                {" "}
+                {/* fixed size touch target */}
+                <Icon
+                  className={cn(
+                    "h-6 w-6",
+                    isSpecial && "border-2 p-0.5 rounded-md",
+                    isSpecial &&
+                      (isActive
+                        ? "border-black dark:border-white"
+                        : "border-muted-foreground")
+                  )}
+                />
+                <span className="text-xs mt-1">{label}</span>
+              </div>
+            </Link>
+          );
+        })}
+
+        {/* Profile link */}
         <Link
           href={`/${me?.username}`}
-          className={`flex flex-col items-center ${
-            pathname===(`/${me?.username}`)
+          className={cn(
+            "flex flex-col items-center justify-center px-3 ",
+            pathname === `/${me?.username}`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
-          }`}
+          )}
         >
-          <User className="h-6 w-6" />
-          <span className="text-xs mt-1">Profile</span>
+          <div className="flex flex-col items-center justify-center w-16 h-14">
+            <User className="h-6 w-6" />
+            <span className="text-xs mt-1">Profile</span>
+          </div>
         </Link>
       </div>
     </div>

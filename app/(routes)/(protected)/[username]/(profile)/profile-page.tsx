@@ -41,7 +41,7 @@ export default function ProfilePage({
   useEffect(() => {
     function fetchUserWithUsername() {
       if (!username) {
-        console.log("username2: ", username);
+        // console.log("username2: ", username);
         return;
       }
       const currentUser = initialUserDetails;
@@ -51,8 +51,8 @@ export default function ProfilePage({
       const doIFollowCurrentUser = currentUser?.following.some(
         (following) => following.followerId === me?.id
       );
-      console.log("current user: ", currentUser?.username);
-      console.log("me: ", me?.username);
+      // console.log("current user: ", currentUser?.username);
+      // console.log("me: ", me?.username);
 
       if (doIFollowCurrentUser) {
         setFollowStatus("Following");
@@ -107,7 +107,7 @@ export default function ProfilePage({
     sendUnsendFollowRequest(user?.id);
   };
 
-  console.log("username: ", username);
+  // console.log("username: ", username);
 
   return (
     <div className="pb-16">

@@ -25,7 +25,7 @@ export async function signin(values: { username: string; password: string }) {
     .sign(new TextEncoder().encode(jwt_secret));
   const cookieStore = await cookies();
   cookieStore.set("token", token);
-  console.log(values.username);
+  // console.log(values.username);
   redirect(`/${values.username}`);
 }
 
@@ -60,7 +60,7 @@ export async function signup(values: {
 
 let i = 0;
 export const getMe = cache(async () => {
-  console.log("get me called: ", i);
+  // console.log("get me called: ", i);
   i++;
   const cookiesStore = await cookies();
   const token = cookiesStore.get("token")?.value;

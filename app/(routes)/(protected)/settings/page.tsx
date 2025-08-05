@@ -1,16 +1,8 @@
-"use client";
-
-import { LogOut } from "@/app/actions/auth.actions";
-import { MeContext } from "@/components/me-context";
-import { Button } from "@/components/ui/button";
+import LogoutButton from "@/components/logout-btn";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useContext } from "react";
 
-export default function page() {
-  const me = useContext(MeContext);
-  const router = useRouter();
+export default async function page() {
   const settingsSections = [
     {
       title: "Account",
@@ -75,13 +67,13 @@ export default function page() {
   return (
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
-        <Button
-        variant={"ghost"}
-        onClick={()=>window.history.back()}
+        <Link
+          // onClick={() => window.history.back()}
+          href={"/"}
           className="mr-2"
         >
           <ArrowLeft className="h-5 w-5" />
-        </Button>
+        </Link>
         <h1 className="text-xl font-semibold flex-1">Settings</h1>
       </header>
 
@@ -106,20 +98,14 @@ export default function page() {
       </div>
 
       <div className="p-4 mt-4 flex flex-col gap-4">
-        <Button
-          onClick={() => LogOut()}
-          variant="outline"
-          className="w-full text-blue-500 hover:text-blue-600"
-        >
-          Log Out
-        </Button>
-        <Button
-          onClick={() => router.push("/signin")}
-          variant="outline"
+        <LogoutButton />
+        <Link
+          // onClick={() => router.push("/signin")}
+          href={"/signin"}
           className="w-full text-blue-500 hover:text-blue-600"
         >
           Add Another Account
-        </Button>
+        </Link>
       </div>
     </div>
   );

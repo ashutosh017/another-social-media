@@ -97,7 +97,7 @@ export function EditProfileDialog({
     setOpen(false);
   };
   function handlePrivacyToggle(checked: boolean): void {
-    console.log("privace it set to: ", checked)
+    // console.log("privace it set to: ", checked)
     setIsPrivate(checked);
   }
   return (

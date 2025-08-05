@@ -21,6 +21,7 @@ import { toggleLikePost, toggleSavePost } from "@/app/actions/posts.actions";
 import { formatDistanceToNowStrict } from "date-fns";
 import { EmptyFeed } from "./empty-feed";
 import FeedSkeleton from "./feed-skeleton";
+import { LikesModal } from "@/components/likes-modal";
 
 export default function FeedPage({
   initialFeed,
@@ -36,7 +37,7 @@ export default function FeedPage({
   const [feed, setFeed] = useState<FeedType>(null);
 
   useEffect(() => {
-  setFeed(initialFeed);
+    setFeed(initialFeed);
     setNewNotifications(hasInitialNewNotifications);
   }, []);
   return (
@@ -70,10 +71,10 @@ export default function FeedPage({
       <div className="space-y-4 pb-4">
         {!feed ? (
           <FeedSkeleton />
-        ) : feed?.length === 0 ? (
+        ) : (feed ?? initialFeed)?.length === 0 ? (
           <EmptyFeed />
         ) : (
-          feed?.map((post, i) => (
+          (feed ?? initialFeed)?.map((post, i) => (
             <Card key={i} className="border-x-0 rounded-none shadow-none">
               <CardHeader className="flex flex-row items-center p-4">
                 <Link
@@ -87,20 +88,21 @@ export default function FeedPage({
                 </Link>
               </CardHeader>
               <CardContent
-                className="p-0"
+                className="p-0 relative aspect-square cursor-pointer"
                 onClick={() => {
                   router.push(`/posts/${post.id}`);
                 }}
               >
                 <Image
                   src={post.url}
-                  priority
-                  width={400}
-                  height={400}
                   alt={`Post ${i + 1}`}
-                  className="object-cover aspect-square w-full"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover w-full h-full"
+                  priority={i === 0} // Only the first post is critical
                 />
               </CardContent>
+
               <CardFooter className="grid gap-2 p-4">
                 <div className="flex items-center w-full">
                   <Button
@@ -191,7 +193,10 @@ export default function FeedPage({
                     <span className="sr-only">Save</span>
                   </Button>
                 </div>
-                <div className="text-sm font-semibold">
+                <div
+                  onClick={() => router.push(`/posts/${post.id}`)}
+                  className="text-sm font-semibold cursor-pointer"
+                >
                   {post.likes.length} likes
                 </div>
                 <div className="text-sm">

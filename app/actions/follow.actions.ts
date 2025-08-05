@@ -92,7 +92,7 @@ export const sendUnsendFollowRequest = async (toUserId: string) => {
 
     follow(me.id, toUserId);
   } catch (error) {
-    console.log("error in sendunsendfollowreq fn: ", error);
+    // console.log("error in sendunsendfollowreq fn: ", error);
   }
 };
 
@@ -157,7 +157,7 @@ export const fetchFollowers = async (username: string) => {
     });
     return followers;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return null;
   }
 };
@@ -187,7 +187,7 @@ export const fetchFollowing = async (username: string) => {
     });
     return following;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return null;
   }
 };
@@ -205,7 +205,7 @@ export async function removeFollower(followerId: string) {
       },
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 }
 

@@ -15,19 +15,19 @@ export async function editProfile(values: {
     return;
   }
   try {
-    console.log("updating starts");
-    console.log("values: ",values)
+    // console.log("updating starts");
+    // console.log("values: ",values)
     await prisma.user.update({
       where: {
         id: me.id,
       },
       data:values
     });
-    console.log("updating end");
+    // console.log("updating end");
   } catch (error) {
-    console.log("error in updating: ", error);
+    // console.log("error in updating: ", error);
   }
-  console.log("edit profile called")
+  // console.log("edit profile called")
 }
 
 export const fetchUserDetails = async (username: string) => {
