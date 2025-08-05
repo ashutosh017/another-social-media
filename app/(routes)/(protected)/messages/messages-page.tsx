@@ -99,11 +99,11 @@ export default function MessagesPage({
     if (message.trim() && selectedRecipient) {
       // Handle sending message logic here
       // console.log(
-        "Sending message to:",
-        selectedRecipient.username,
-        "Message:",
-        message
-      );
+      //   "Sending message to:",
+      //   selectedRecipient.username,
+      //   "Message:",
+      //   message
+      // );
       sendMessage(message, selectedRecipient.username);
 
       setMessage("");
