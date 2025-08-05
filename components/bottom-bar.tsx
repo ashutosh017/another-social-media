@@ -28,7 +28,7 @@ export default function BottomBar() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center px-4 py-2", // added padding
+                "flex flex-col items-center justify-center  py-2", // added padding
                 isActive
                   ? "text-black dark:text-white"
                   : "text-muted-foreground"
@@ -57,7 +57,7 @@ export default function BottomBar() {
         <Link
           href={`/${me?.username}`}
           className={cn(
-            "flex flex-col items-center justify-center px-3 ",
+            "flex flex-col items-center justify-center  ",
             pathname === `/${me?.username}`
               ? "text-black dark:text-white"
               : "text-muted-foreground"
