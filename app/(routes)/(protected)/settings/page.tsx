@@ -1,8 +1,13 @@
+"use client";
+
 import LogoutButton from "@/components/logout-btn";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default async function page() {
+export default  function page() {
+  const router = useRouter();
   const settingsSections = [
     {
       title: "Account",
@@ -99,13 +104,13 @@ export default async function page() {
 
       <div className="p-4 mt-4 flex flex-col gap-4">
         <LogoutButton />
-        <Link
-          // onClick={() => router.push("/signin")}
-          href={"/signin"}
+        <Button
+        variant={"outline"}
+          onClick={() => router.push("/signin")}
           className="w-full text-blue-500 hover:text-blue-600"
         >
           Add Another Account
-        </Link>
+        </Button>
       </div>
     </div>
   );
