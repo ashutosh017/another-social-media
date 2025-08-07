@@ -18,6 +18,8 @@ export default function FollowingPage({
   initialFollowing: FollowingType;
   isAllowed: boolean;
 }) {
+  const params = useParams<{ username: string }>();
+  const username = params.username;
   const [following, setFollowing] = useState<FollowingType>();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -148,10 +150,14 @@ export default function FollowingPage({
               ) : (
                 <>
                   <p className="text-lg font-semibold">
-                    {"You're not following anyone"}
+                    {username !== me?.username
+                      ? `${username} isn’t following anyone`
+                      : "You’re not following anyone yet"}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Start exploring and follow people to see their posts.
+                    {username !== me?.username
+                      ? "When they follow people, they'll show up here."
+                      : "Start discovering and follow users to see their posts here."}
                   </p>
                 </>
               )}

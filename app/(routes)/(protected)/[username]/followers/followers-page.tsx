@@ -189,7 +189,7 @@ export default function FollowersPage({
                 <div className="text-center py-6">
                   <p className="text-lg font-semibold">No followers yet</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    When someone follows you, they'll show up here.
+                    When someone follows {username!==me?.username?username:'you'}, they'll show up here.
                   </p>
                 </div>
               )

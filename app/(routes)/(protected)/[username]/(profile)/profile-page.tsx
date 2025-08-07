@@ -75,11 +75,11 @@ export default function ProfilePage({
   const handleFollow = async () => {
     if (!user) return;
     followStatus === "Follow"
-      ? (user?user:initialUserDetails)?.public
+      ? (user ? user : initialUserDetails)?.public
         ? setFollowStatus("Following")
         : setFollowStatus("Requested")
       : setFollowStatus("Follow");
-    if ((initialUserDetails)?.public && followStatus === "Follow") {
+    if (initialUserDetails?.public && followStatus === "Follow") {
       setUser(
         (prev) =>
           prev && {
@@ -89,7 +89,7 @@ export default function ProfilePage({
               {
                 dateCreated: new Date(),
                 followerId: me.id,
-                followingId: (user?user:initialUserDetails)?.id,
+                followingId: (user ? user : initialUserDetails)?.id,
                 id: "new_follower",
               },
             ],
@@ -113,8 +113,8 @@ export default function ProfilePage({
     <div className="pb-16">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
         <h1 className="text-xl font-semibold flex-1 flex items-center    gap-2">
-          {(user?user:initialUserDetails)?.username}
-          {(user?user:initialUserDetails)?.public ? (
+          {(user ? user : initialUserDetails)?.username}
+          {(user ? user : initialUserDetails)?.public ? (
             <Globe className="w-4 h-4 mb-0.5" />
           ) : (
             <Lock className="w-4 h-4 mb-0.5" />
@@ -133,7 +133,8 @@ export default function ProfilePage({
           <Avatar className="h-20 w-20">
             <AvatarImage
               src={
-                (user?user:initialUserDetails)?.profilePicUrl ?? "/(user?user:initialUserDetails)?.png"
+                (user ? user : initialUserDetails)?.profilePicUrl ??
+                "/(user?user:initialUserDetails)?.png"
               }
               alt="Profile"
             />
@@ -143,39 +144,43 @@ export default function ProfilePage({
           <div className="flex gap-4 text-center">
             <Link href="#" className="block">
               <div className="font-semibold">
-                {(user?user:initialUserDetails)?.posts.length}
+                {(user ? user : initialUserDetails)?.posts.length}
               </div>
               <div className="text-sm text-muted-foreground">Posts</div>
             </Link>
             <button
               onClick={() =>
-                router.push(`${(user?user:initialUserDetails)?.username}/followers `)
+                router.push(
+                  `${(user ? user : initialUserDetails)?.username}/followers `
+                )
               }
               disabled={
-                !(user?user:initialUserDetails)?.public &&
+                !(user ? user : initialUserDetails)?.public &&
                 followStatus !== "Following" &&
-                (user?user:initialUserDetails)?.id !== me.id
+                (user ? user : initialUserDetails)?.id !== me.id
               }
               className="block"
             >
               <div className="font-semibold">
-                {(user?user:initialUserDetails)?.following.length}
+                {(user ? user : initialUserDetails)?.following.length}
               </div>
               <div className="text-sm text-muted-foreground">Followers</div>
             </button>
             <button
               onClick={() =>
-                router.push(`${(user?user:initialUserDetails)?.username}/following`)
+                router.push(
+                  `${(user ? user : initialUserDetails)?.username}/following`
+                )
               }
               disabled={
-                !(user?user:initialUserDetails)?.public &&
+                !(user ? user : initialUserDetails)?.public &&
                 followStatus !== "Following" &&
-                (user?user:initialUserDetails)?.id !== me.id
+                (user ? user : initialUserDetails)?.id !== me.id
               }
               className="block"
             >
               <div className="font-semibold">
-                {(user?user:initialUserDetails)?.followers.length}
+                {(user ? user : initialUserDetails)?.followers.length}
               </div>
               <div className="text-sm text-muted-foreground">Following</div>
             </button>
@@ -192,7 +197,7 @@ export default function ProfilePage({
         </div>
 
         <div>
-          {(user?user:initialUserDetails)?.id === me?.id ? (
+          {(user ? user : initialUserDetails)?.id === me?.id ? (
             <div className="mt-4 flex gap-2">
               <EditProfileDialog user={initialUserDetails} setUser={setUser} />
               <Button variant="outline" className="flex-1">
@@ -214,7 +219,9 @@ export default function ProfilePage({
               <Button
                 onClick={() => {
                   router.push(
-                    me.username + "/messages/" + (user?user:initialUserDetails)?.username
+                    me.username +
+                      "/messages/" +
+                      (user ? user : initialUserDetails)?.username
                   );
                 }}
               >
@@ -227,8 +234,9 @@ export default function ProfilePage({
         <div></div>
       </div>
 
-      {!(user?user:initialUserDetails)?.public &&
-      (user?user:initialUserDetails)?.username !== me.username ? (
+      {!(user ? user : initialUserDetails)?.public &&
+      (user ? user : initialUserDetails)?.username !== me.username &&
+      followStatus !== "Following" ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <div className="w-24 h-24 rounded-full border-2 border-muted flex items-center justify-center mb-6">
             <Lock className="h-12 w-12 text-muted-foreground" />
@@ -258,9 +266,10 @@ export default function ProfilePage({
           </TabsList>
 
           <TabsContent value="posts" className="mt-2 mx-1">
-            {initialUserDetails?.posts && initialUserDetails.posts.length > 0 ? (
+            {initialUserDetails?.posts &&
+            initialUserDetails.posts.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
-                {(initialUserDetails)?.posts.map((post, i) => (
+                {initialUserDetails?.posts.map((post, i) => (
                   <Link
                     href={`/posts/${post.id}`}
                     key={i}
@@ -298,9 +307,10 @@ export default function ProfilePage({
           </TabsContent>
 
           <TabsContent value="tagged" className="mt-2 mx-1">
-            {Array.isArray(initialUserDetails?.tagged) && initialUserDetails.tagged.length > 0 ? (
+            {Array.isArray(initialUserDetails?.tagged) &&
+            initialUserDetails.tagged.length > 0 ? (
               <div className="grid grid-cols-3 gap-0.5">
-                {(initialUserDetails)?.tagged?.map((post, i) => (
+                {initialUserDetails?.tagged?.map((post, i) => (
                   <Link
                     href={`/posts/${post.id}`}
                     key={i}
@@ -323,7 +333,9 @@ export default function ProfilePage({
                 <h2 className="text-lg font-semibold">No Tagged Posts</h2>
                 <p className="text-sm text-muted-foreground mt-2">
                   Posts{" "}
-                  {(user?user:initialUserDetails)?.id === me.id ? "you're" : "this user"}{" "}
+                  {(user ? user : initialUserDetails)?.id === me.id
+                    ? "you're"
+                    : "this user"}{" "}
                   tagged in will appear here.
                 </p>
               </div>

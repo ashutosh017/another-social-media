@@ -117,16 +117,24 @@ export async function createNotification(
 }
 
 export async function markAsSeenNotification(id: string) {
-  // console.log("marked notification called");
-  await prisma.notification.update({
-    where: {
-      id,
-    },
-    data: {
-      isRead: true,
-    },
-  });
+  try {
+    const notification = await prisma.notification.findUnique({ where: { id } });
+
+    if (!notification) {
+      console.warn(`Notification with id ${id} not found`);
+      return;
+    }
+ 
+
+    await prisma.notification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+  } catch (error) {
+    console.error("Error updating notification:", error);
+  }
 }
+
 
 export async function deleteNotification(id: string) {
   await prisma.notification.delete({
