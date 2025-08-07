@@ -17,23 +17,6 @@ export async function fetchConversations() {
       },
     },
     include: {
-      // participants: {
-      // //   where: {
-      // //     userId: {
-      // //       not: me.id, // Get other users in the conversation
-      // //     },
-      // //   },
-      // //   include: {
-      // //     user: {
-      // //       select: {
-      // //         id: true,
-      // //         username: true,
-      // //         name: true,
-      // //         profilePicUrl: true,
-      // //       },
-      // //     },
-      // //   },
-      // },
       participants: {
         where: {
           userId: {

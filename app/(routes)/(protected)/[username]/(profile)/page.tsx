@@ -8,8 +8,6 @@ export default async function page({
   params: Promise<{ username: string }>;
 }) {
   const username = (await params).username;
-  // await wait (3000)
   const profileDetails = await fetchUserDetails(username);
   return <ProfilePage initialUserDetails={profileDetails} />;
 }
-

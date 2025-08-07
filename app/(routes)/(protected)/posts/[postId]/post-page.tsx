@@ -9,13 +9,19 @@ import {
   Bookmark,
   Heart,
   MessageCircle,
+  MoreHorizontal,
+  MoreVertical,
   Send,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { toggleLikePost, toggleSavePost } from "@/app/actions/posts.actions";
+import {
+  deletePost,
+  toggleLikePost,
+  toggleSavePost,
+} from "@/app/actions/posts.actions";
 import { MeContext } from "@/components/me-context";
 import {
   addComment,
@@ -26,6 +32,8 @@ import { cn } from "@/lib/utils";
 import { CommentBox } from "@/components/commnet-box";
 import { LikesModal } from "@/components/likes-modal";
 import { PostType } from "@/app/actions/types";
+import { PostActions } from "@/components/post-action-btn";
+import { PostCaption } from "@/components/post-caption";
 
 export default function PostPage({
   initialPostDetails,
@@ -71,6 +79,7 @@ export default function PostPage({
   const commentScrollRef = useRef<HTMLDivElement | null>(null);
   const commentSectionRef = useRef<HTMLDivElement | null>(null);
   const [maxed, setMaxed] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!commentSectionRef.current) return;
@@ -264,7 +273,6 @@ export default function PostPage({
     }
     setShowCommentReplies(commentReplies);
   };
-
   return (
     <div className="min-h-screen pb-16 scroll-smooth">
       <header className="border-b p-4 sticky top-0 bg-background z-10 flex items-center">
@@ -303,12 +311,20 @@ export default function PostPage({
             )} */}
           </div>
         </div>
-        {/* <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button> */}
+        {initialPostDetails?.userId === me.id && (
+          <PostActions
+            onDelete={async () => {
+              await deletePost(initialPostDetails.id);
+              router.push(`/${me.username}`);
+            }}
+            onEdit={() => {
+              setIsEditing(true);
+            }}
+          />
+        )}
       </header>
 
-      {isPrivatePost ? (
+      {isPrivatePost && initialPostDetails?.userId !== me.id ? (
         <>
           <h2 className="text-center px-8 mt-10 text-lg font-semibold text-muted-foreground">
             This post is private or you do not have permission to view it.
@@ -386,15 +402,11 @@ export default function PostPage({
                 >
                   {postLikes} likes
                 </p>
-                <div className="text-sm">
-                  <Link
-                    href={`/${(post ?? initialPostDetails)?.user.username}`}
-                    className="font-semibold"
-                  >
-                    {(post ?? initialPostDetails)?.user.username}
-                  </Link>{" "}
-                  {(post ?? initialPostDetails)?.caption}
-                </div>
+                <PostCaption
+                  post={post ?? initialPostDetails}
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                />
                 <p className="text-xs text-muted-foreground">
                   {(post ?? initialPostDetails)?.dateCreated &&
                     formatDistanceToNow(

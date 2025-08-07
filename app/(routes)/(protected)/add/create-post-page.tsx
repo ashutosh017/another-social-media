@@ -69,7 +69,7 @@ export default function CreatePostPage() {
         <h1 className="text-xl font-semibold">New post</h1>
         <Button
           onClick={handleShare}
-          disabled={!selectedImage || !caption.trim()}
+          disabled={!selectedImage }
           className="text-sm px-4"
         >
           Share

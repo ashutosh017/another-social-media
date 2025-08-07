@@ -11,10 +11,10 @@ export default async function page({
   const postId = (await params).postId;
 
   const postDetails = await fetchPost(postId);
+
+  
   const isPrivatePost =
-    !postDetails?.user.public && !!postDetails?.user.following;
-    // console.log(isPrivatePost)
-    // console.log(postDetails)
+    !postDetails?.user.public && !!postDetails?.user.following ;
     if(!postDetails)notFound()
   return (
     <PostPage initialPostDetails={postDetails} isPrivatePost={isPrivatePost} />

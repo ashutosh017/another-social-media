@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  fetchConversations,
   sendMessage,
 } from "@/app/actions/messages.actions";
 import {
@@ -38,7 +37,6 @@ export default function MessagesPage({
 }) {
 
   const params = useParams();
-  const username = params.username;
   const me = useContext(MeContext);
 
   const [showSendMessage, setShowSendMessage] = useState(false);
@@ -56,7 +54,6 @@ export default function MessagesPage({
 
   useEffect(() => {
     if (debouncedQuery) {
-      // console.log("debounced query changed : ", debouncedQuery);
       async function callSearchUsers() {
         const usrs = await searchUsersToSendMessage(debouncedQuery);
         if (usrs) {

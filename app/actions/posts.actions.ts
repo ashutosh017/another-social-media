@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/db";
 import { getMe } from "@/app/actions/auth.actions";
+import { redirect } from "next/navigation";
+import { deleteImageFromCloudinary } from "./cloudinary.actions";
 
 export async function fetchPost(postId: string) {
   const userFields = {
@@ -166,4 +168,67 @@ export async function createNewPost(iamgeUrl: string, caption: string) {
       userId: me.id,
     },
   });
+}
+
+export async function deletePost(postId: string) {
+  try {
+    const me = await getMe();
+    if (!me) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    if (post.userId !== me.id) {
+      return { success: false, error: "Permission denied" };
+    }
+
+    await deleteImageFromCloudinary(post.url);
+
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete post:");
+    return { success: false, error: "Server error" };
+  }
+}
+
+export async function editPost(postId: string, caption: string) {
+  try {
+    const me = await getMe();
+    if (!me) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    if (post.userId !== me.id) {
+      return { success: false, error: "Permission denied" };
+    }
+
+    await prisma.post.update({
+      where: { id: postId },
+      data: { caption },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to edit post:", error);
+    return { success: false, error: "Server error" };
+  }
 }
