@@ -9,5 +9,5 @@ export default async function page() {
   //   }, 2000);
   // });
 
-  return <NotificationsPage initialNotifications={[]} />;
+  return <NotificationsPage initialNotifications={notifications} />;
 }
